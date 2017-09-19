@@ -1,5 +1,7 @@
 package scrabbleAISrcPckg;
 
+import javafx.event.EventHandler;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -9,11 +11,13 @@ import javafx.scene.text.Text;
 
 public class LetterContainer extends StackPane {
 
+    private String originalValue; // used to repopulate display value on invalid user drag
     private Text text;
     private Letter letter;
     private Rectangle rectangle;
     private Paint originalColor;
     boolean containsLetter = false;
+    private String descriptiveText = "";
 
     public LetterContainer() {
         new LetterContainer("");
@@ -24,7 +28,6 @@ public class LetterContainer extends StackPane {
         rectangle = new Rectangle();
         rectangle.setHeight(50);
         rectangle.setWidth(50);
-        setPrefSize(50, 50);
         getChildren().addAll(rectangle, text);
 
         setOnDragOver(event -> {
@@ -62,6 +65,39 @@ public class LetterContainer extends StackPane {
             event.setDropCompleted(success);
             event.consume();
         });
+
+        setOnDragDetected(event -> {
+            if (containsLetter) {
+                Dragboard db = startDragAndDrop(TransferMode.MOVE);
+                db.setDragView(snapshot(null, new WritableImage(51, 51)));
+                db.setDragViewOffsetX(35);
+                db.setDragViewOffsetY(35);
+                ClipboardContent content = new ClipboardContent();
+                originalValue = text.getText();
+                content.putString(text.getText());
+                text.setText("");
+                db.setContent(content);
+
+                event.consume();
+            }
+        });
+
+        setOnDragDone(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+                if (event.getTransferMode() == TransferMode.MOVE) {
+                    text.setText(descriptiveText);
+                    rectangle.setFill(originalColor);
+                    containsLetter = false;
+                    if (descriptiveText.equals("★")) {
+                        setStyle("-fx-font: 40 arial;");
+                    }
+                } else {
+                    text.setText(originalValue);
+                }
+
+                event.consume();
+            }
+        });
     }
 
     public void setColor(Color c) {
@@ -90,6 +126,14 @@ public class LetterContainer extends StackPane {
 
     public void colorBorder(Color color) {
         rectangle.setStroke(color);
+    }
+
+    public String getDescriptiveText() {
+        return descriptiveText;
+    }
+
+    public void setDescriptiveText(String descriptiveText) {
+        this.descriptiveText = descriptiveText;
     }
 
     public Letter getLetter() {

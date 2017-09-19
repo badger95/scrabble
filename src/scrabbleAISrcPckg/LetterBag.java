@@ -31,51 +31,51 @@ public final class LetterBag {
     // Fill letter bag
     private LetterBag() {
         // 1 point letters
-        addInitialLetters('A', 1 , 9);
-        addInitialLetters('I', 1 , 9);
-        addInitialLetters('E', 1 , 12);
-        addInitialLetters('O', 1 , 8);
-        addInitialLetters('N', 1 , 6);
-        addInitialLetters('R', 1 , 6);
-        addInitialLetters('T', 1 , 6);
-        addInitialLetters('L', 1 , 4);
-        addInitialLetters('S', 1 , 4);
-        addInitialLetters('U', 1 , 4);
+        addInitialLetters('A', 9);
+        addInitialLetters('I', 9);
+        addInitialLetters('E', 12);
+        addInitialLetters('O', 8);
+        addInitialLetters('N', 6);
+        addInitialLetters('R', 6);
+        addInitialLetters('T', 6);
+        addInitialLetters('L', 4);
+        addInitialLetters('S', 4);
+        addInitialLetters('U', 4);
         // 2 point letters
-        addInitialLetters('D', 2 , 4);
-        addInitialLetters('G', 2 , 3);
+        addInitialLetters('D', 4);
+        addInitialLetters('G', 3);
         // 3 point letters
-        addInitialLetters('B', 3 , 2);
-        addInitialLetters('C', 3 , 2);
-        addInitialLetters('M', 3 , 2);
-        addInitialLetters('P', 3 , 2);
+        addInitialLetters('B', 2);
+        addInitialLetters('C', 2);
+        addInitialLetters('M', 2);
+        addInitialLetters('P', 2);
         // 4 point letters
-        addInitialLetters('F', 4 , 2);
-        addInitialLetters('H', 4 , 2);
-        addInitialLetters('V', 4 , 2);
-        addInitialLetters('W', 4 , 2);
-        addInitialLetters('Y', 4 , 2);
+        addInitialLetters('F', 2);
+        addInitialLetters('H', 2);
+        addInitialLetters('V', 2);
+        addInitialLetters('W', 2);
+        addInitialLetters('Y', 2);
         // 5 point letter
-        addInitialLetters('K', 5 , 1);
+        addInitialLetters('K', 1);
         // 8 point letters
-        addInitialLetters('J', 8 , 1);
-        addInitialLetters('X', 8 , 1);
+        addInitialLetters('J', 1);
+        addInitialLetters('X', 1);
 
-        addInitialLetters('Q', 10, 1);
-        addInitialLetters('Z', 10, 1);
+        addInitialLetters('Q',  1);
+        addInitialLetters('Z',  1);
         // leaving out blanks for now
         // addInitialLetters('_', 0, 2); // '_' represents a blank letter square
     }
 
-    private void addInitialLetters(Character character, int value, int numberOfOccurrences) {
+    private void addInitialLetters(Character character, int numberOfOccurrences) {
 
-        if (isBagEmpty()) {letters.addFirst(new Letter(value, character));
+        if (isBagEmpty()) {letters.addFirst(new Letter(character));
             for (int i = 0; i < numberOfOccurrences-1; i++) {
-                letters.add(new Letter(value, character));}
+                letters.add(new Letter(character));}
         }
         else {
             for (int i = 0; i < numberOfOccurrences; i++) {
-                letters.add(new Letter(value, character));}
+                letters.add(new Letter(character));}
         }
     }
 
