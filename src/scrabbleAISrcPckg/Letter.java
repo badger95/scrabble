@@ -1,7 +1,6 @@
 package scrabbleAISrcPckg;
 
 import javafx.event.EventHandler;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
 import javafx.scene.layout.StackPane;
@@ -14,7 +13,7 @@ public class Letter extends StackPane {
     private char character;
     private Rectangle rectangle;
     private Text text;
-    private boolean isCommittedToBoard = false;
+    private String originalValue;
 
     Letter() {
     }
@@ -24,19 +23,31 @@ public class Letter extends StackPane {
         this.character = character;
         rectangle = new Rectangle(50,50);
         text = new Text(this.toString());
-        rectangle.setFill(Color.TAN);
+        rectangle.setFill(Color.SADDLEBROWN);
         rectangle.setStroke(Color.CHOCOLATE);
         getChildren().addAll(rectangle,text);
 
-        setOnDragDetected(new EventHandler <MouseEvent>() {
-            public void handle(MouseEvent event) {
-                Dragboard db = startDragAndDrop(TransferMode.MOVE);
-                db.setDragView(snapshot(null, new WritableImage(51,51)));
-                db.setDragViewOffsetX(35);
-                db.setDragViewOffsetY(35);
-                ClipboardContent content = new ClipboardContent();
-                content.putString(text.getText());
-                db.setContent(content);
+        setOnDragDetected(event -> {
+            Dragboard db = startDragAndDrop(TransferMode.MOVE);
+            db.setDragView(snapshot(null, new WritableImage(51,51)));
+            db.setDragViewOffsetX(35);
+            db.setDragViewOffsetY(35);
+            ClipboardContent content = new ClipboardContent();
+            content.putString(text.getText());
+            originalValue = text.getText();
+            text.setText("");
+            db.setContent(content);
+
+            event.consume();
+        });
+
+        setOnDragDone(new EventHandler <DragEvent>() {
+            public void handle(DragEvent event) {
+                if (event.getTransferMode() == TransferMode.MOVE) {
+                    text.setText("");
+                } else {
+                    text.setText(originalValue);
+                }
 
                 event.consume();
             }

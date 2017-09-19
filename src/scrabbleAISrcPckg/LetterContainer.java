@@ -1,6 +1,5 @@
 package scrabbleAISrcPckg;
 
-import javafx.event.EventHandler;
 import javafx.scene.input.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -14,6 +13,7 @@ public class LetterContainer extends StackPane {
     private Letter letter;
     private Rectangle rectangle;
     private Paint originalColor;
+    boolean containsLetter = false;
 
     public LetterContainer() {
         new LetterContainer("");
@@ -27,9 +27,14 @@ public class LetterContainer extends StackPane {
         setPrefSize(50, 50);
         getChildren().addAll(rectangle, text);
 
+        setOnDragOver(event -> {
+            event.acceptTransferModes(TransferMode.ANY);
+            event.consume();
+        });
+
         setOnDragEntered(event -> {
                 if (event.getGestureSource() != this &&
-                        event.getDragboard().hasString()) {
+                        event.getDragboard().hasString() && !containsLetter) {
                     originalColor = rectangle.getFill();
                     rectangle.setFill(Color.YELLOW);
                 }
@@ -37,7 +42,9 @@ public class LetterContainer extends StackPane {
         });
 
         setOnDragExited(event -> {
-            rectangle.setFill(originalColor);
+            if (!containsLetter) {
+                rectangle.setFill(originalColor);
+            }
             event.consume();
         });
 
@@ -45,9 +52,12 @@ public class LetterContainer extends StackPane {
             Dragboard db = event.getDragboard();
             event.acceptTransferModes(TransferMode.MOVE);
             boolean success = false;
-            if (db.hasString()) {
+            if (db.hasString() && !containsLetter) {
                 text.setText(db.getString());
+                rectangle.setFill(Color.SADDLEBROWN);
                 success = true;
+                containsLetter = true;
+                setStyle("-fx-font: 12 arial;"); //required to make star square font size smaller
             }
             event.setDropCompleted(success);
             event.consume();
