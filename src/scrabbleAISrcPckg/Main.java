@@ -14,16 +14,18 @@ public class Main extends Application {
         // FXMLLoader.load(getClass().getResource("sample.fxml"));
         VBox root = new VBox();
         HBox hBox = new HBox();
-        primaryStage.setScene(new Scene(root, 1000, 900));
+        VBox sideBar = new VBox();
+        primaryStage.setScene(new Scene(root, 1200, 800));
         LetterBag letterBag = LetterBag.getInstance();
         AIPlayer aiPlayer = new AIPlayer();
         HumanPlayer humanPlayer = new HumanPlayer();
         Board board = new Board();
         board.setAlignment(Pos.TOP_CENTER);
-        root.getChildren().add(board);
-        hBox.getChildren().add(aiPlayer.getLetterRack());
-        hBox.getChildren().add(humanPlayer.getLetterRack());
-        root.getChildren().add(hBox);
+        hBox.getChildren().add(board);
+        sideBar.getChildren().add(aiPlayer.getLetterRack());
+        sideBar.getChildren().add(humanPlayer.getLetterRack());
+        hBox.getChildren().add(sideBar);
+        root.getChildren().addAll(hBox);
         primaryStage.setTitle("Scrabble");
         primaryStage.show();
     }

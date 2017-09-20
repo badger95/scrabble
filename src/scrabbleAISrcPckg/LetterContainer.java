@@ -75,7 +75,11 @@ public class LetterContainer extends StackPane {
                 ClipboardContent content = new ClipboardContent();
                 originalValue = text.getText();
                 content.putString(text.getText());
-                text.setText("");
+                rectangle.setFill(originalColor);
+                text.setText(descriptiveText);
+                if (descriptiveText.equals("★")) {
+                    setStyle("-fx-font: 40 arial;");
+                }
                 db.setContent(content);
 
                 event.consume();
