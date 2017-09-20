@@ -97,6 +97,8 @@ public class LetterContainer extends StackPane {
                     }
                 } else {
                     text.setText(originalValue);
+                    rectangle.setFill(Color.SADDLEBROWN);
+                    setStyle("-fx-font: 12 arial;");
                 }
 
                 event.consume();
