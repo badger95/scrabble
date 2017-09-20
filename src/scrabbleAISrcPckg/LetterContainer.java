@@ -11,13 +11,12 @@ import javafx.scene.text.Text;
 
 public class LetterContainer extends StackPane {
 
-    private String originalValue; // used to repopulate display value on invalid user drag
+    private String originalValue; // for repopulating display value on invalid user drag
     private Text text;
-    private Letter letter;
     private Rectangle rectangle;
-    private Paint originalColor;
-    boolean containsLetter = false;
-    private String descriptiveText = "";
+    private Paint originalColor; // for repopulating square's original color
+    private boolean containsLetter = false;
+    private String descriptiveText = ""; // denotes bonus text or star
 
     public LetterContainer() {
         new LetterContainer("");
@@ -142,12 +141,7 @@ public class LetterContainer extends StackPane {
         this.descriptiveText = descriptiveText;
     }
 
-    public Letter getLetter() {
-        return letter;
-    }
-
-    public void setLetter(Letter letter) {
-        this.letter = letter;
+    public void addLetter(Letter letter) {
         getChildren().add(letter);
     }
 

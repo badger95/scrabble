@@ -1,9 +1,10 @@
 package scrabbleAISrcPckg;
 
-import java.util.List;
-
 public class GameManager {
 
-    List<Player> players;
+    private static Player[] players;
 
+    public static int getNumberOfPlayers() {
+        return players.length;
+    }
 }
