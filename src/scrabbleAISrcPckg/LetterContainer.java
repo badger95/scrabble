@@ -1,6 +1,5 @@
 package scrabbleAISrcPckg;
 
-import javafx.event.EventHandler;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
 import javafx.scene.layout.StackPane;
@@ -18,11 +17,11 @@ public class LetterContainer extends StackPane {
     private boolean containsLetter = false;
     private String descriptiveText = ""; // denotes bonus text or star
 
-    public LetterContainer() {
+    LetterContainer() {
         new LetterContainer("");
     }
 
-    public LetterContainer(String displaySting) {
+    LetterContainer(String displaySting) {
         text = new Text(displaySting);
         rectangle = new Rectangle();
         rectangle.setHeight(50);
@@ -85,40 +84,46 @@ public class LetterContainer extends StackPane {
             }
         });
 
-        setOnDragDone(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                if (event.getTransferMode() == TransferMode.MOVE) {
-                    text.setText(descriptiveText);
-                    rectangle.setFill(originalColor);
-                    containsLetter = false;
-                    if (descriptiveText.equals("★")) {
-                        setStyle("-fx-font: 40 arial;");
-                    }
-                } else {
-                    text.setText(originalValue);
-                    rectangle.setFill(Color.SADDLEBROWN);
-                    setStyle("-fx-font: 12 arial;");
+        setOnDragDone(event -> {
+            if (event.getTransferMode() == TransferMode.MOVE) {
+                text.setText(descriptiveText);
+                rectangle.setFill(originalColor);
+                containsLetter = false;
+                if (descriptiveText.equals("★")) {
+                    setStyle("-fx-font: 40 arial;");
                 }
-
-                event.consume();
+            } else {
+                text.setText(originalValue);
+                rectangle.setFill(Color.SADDLEBROWN);
+                setStyle("-fx-font: 12 arial;");
             }
+
+            event.consume();
         });
     }
 
-    public void setColor(Color c) {
+    void setColor(Color c) {
         rectangle.setFill(c);
     }
 
-    public Text getText() {
-        return text;
-    }
-
-    public void setText(Text text) {
-        this.text = text;
-    }
-
-    public void setDisplayText(String text) {
+    void setDisplayText(String text) {
         this.text.setText(text);
+    }
+
+    void colorBorder(Color color) {
+        rectangle.setStroke(color);
+    }
+
+    void setDescriptiveText(String descriptiveText) {
+        this.descriptiveText = descriptiveText;
+    }
+
+    void addLetter(Letter letter) {
+        getChildren().add(letter);
+    }
+
+    public String getDescriptiveText() {
+        return descriptiveText;
     }
 
     public Rectangle getRectangle() {
@@ -129,20 +134,12 @@ public class LetterContainer extends StackPane {
         this.rectangle = rectangle;
     }
 
-    public void colorBorder(Color color) {
-        rectangle.setStroke(color);
+    public Text getText() {
+        return text;
     }
 
-    public String getDescriptiveText() {
-        return descriptiveText;
-    }
-
-    public void setDescriptiveText(String descriptiveText) {
-        this.descriptiveText = descriptiveText;
-    }
-
-    public void addLetter(Letter letter) {
-        getChildren().add(letter);
+    public void setText(Text text) {
+        this.text = text;
     }
 
 }

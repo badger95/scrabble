@@ -6,7 +6,7 @@ abstract class Player {
 
     private LetterRack letterRack;
 
-    public Player() {
+    Player() {
         letterRack = new LetterRack();
     }
 
@@ -18,12 +18,8 @@ abstract class Player {
         this.score = score;
     }
 
-    public LetterRack getLetterRack() {
+    LetterRack getLetterRack() {
         return letterRack;
-    }
-
-    public void setLetterRack(LetterRack letterRack) {
-        this.letterRack = letterRack;
     }
 
 }

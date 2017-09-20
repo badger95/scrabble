@@ -1,5 +1,5 @@
 package scrabbleAISrcPckg;
 
-public class AIPlayer extends Player {
+class AIPlayer extends Player {
 
 }

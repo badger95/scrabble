@@ -9,16 +9,12 @@ import javafx.scene.text.Text;
 
 import java.util.Objects;
 
-public class Letter extends StackPane {
+class Letter extends StackPane {
     private Rectangle rectangle;
     private Text text;
     private String originalValue;
-    private boolean isCommittedToBoard = false;
 
-    Letter() {
-    }
-
-    public Letter(char character) {
+    Letter(char character) {
         rectangle = new Rectangle(50,50);
         text = new Text(character+"");
         rectangle.setFill(Color.SADDLEBROWN);

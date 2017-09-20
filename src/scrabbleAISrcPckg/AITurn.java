@@ -1,7 +1,7 @@
 package scrabbleAISrcPckg;
 
-public class AITurn extends Turn {
-    public AITurn(Mutex mutex, int turnId) {
-        super(mutex, turnId);
+class AITurn extends Turn {
+    AITurn(Mutex mutex, int turnId, Player player) {
+        super(mutex, turnId, player);
     }
 }

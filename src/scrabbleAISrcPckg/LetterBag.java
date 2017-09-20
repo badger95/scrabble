@@ -11,7 +11,7 @@ public final class LetterBag {
 
     private static LetterBag ourInstance;
     private static final LinkedList<Letter> letters = new LinkedList<>(); //linked list allows for easy random removal
-    static Map<Character,Integer> letterScoreMappings = new HashMap<>();
+    private static Map<Character,Integer> letterScoreMappings = new HashMap<>();
     static {
         letterScoreMappings.put('A', 1);letterScoreMappings.put('B', 3);
         letterScoreMappings.put('C', 3);letterScoreMappings.put('D', 2);
@@ -86,18 +86,18 @@ public final class LetterBag {
         return letters.remove(randint);
     }
 
-    public static boolean isBagEmpty() {
+    private static boolean isBagEmpty() {
         return letters.isEmpty();
+    }
+
+    static LetterBag getInstance() {
+        if (ourInstance == null)
+            ourInstance = new LetterBag ();
+        return ourInstance;
     }
 
     public static int numberOfRemainingLetters(){
         return letters.size();
-    }
-
-    public static LetterBag getInstance() {
-        if (ourInstance == null)
-            ourInstance = new LetterBag ();
-        return ourInstance;
     }
 
     public static void addLetter(Letter letterTile) {

@@ -1,28 +1,30 @@
 package scrabbleAISrcPckg;
 
 /** Shared object for turn threads to decide whose turn it is */
-public class Mutex {
+class Mutex {
     /** number corresponds to position in GameManagers list of players */
     private int activePlayerId;
     private int numberOfPlayers;
 
-    public Mutex(int activePlayerId, int numberOfPlayers) {
+    Mutex(int activePlayerId, int numberOfPlayers) {
         this.activePlayerId = activePlayerId;
         this.numberOfPlayers = numberOfPlayers;
     }
 
-    public synchronized void switchTurns(){
+    synchronized void switchTurns(){
         activePlayerId = (activePlayerId + 1) % numberOfPlayers;
         notifyAll();
     }
 
-    public synchronized void waitForTurn(int id) throws InterruptedException{
+    synchronized void waitForTurn(int id, Player player) throws InterruptedException{
         while(this.activePlayerId != id) {
+            player.getLetterRack().setDisable(true);
             wait();
         }
+
     }
 
-    public String getWhoseTurnIsIt() {
+    String getWhoseTurnIsIt() {
         return "Player " + activePlayerId + " 's turn.";
     }
 

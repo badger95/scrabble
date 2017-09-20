@@ -5,14 +5,14 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
 
-public class Board extends GridPane {
+class Board extends GridPane {
 
-    public static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
-    public static final String DOUBLE_LETTER_SCORE = "Double\n Letter\n Score";
-    public static final String DOUBLE_WORD_SCORE = "Double\n Word\n Score";
-    public static final String TRIPLE_LETTER_SCORE = "Triple\nLetter\nScore";
+    private static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
+    private static final String DOUBLE_LETTER_SCORE = "Double\n Letter\n Score";
+    private static final String DOUBLE_WORD_SCORE = "Double\n Word\n Score";
+    private static final String TRIPLE_LETTER_SCORE = "Triple\nLetter\nScore";
 
-    public Board() {
+    Board() {
         for (int row = 0; row < 15; row++) {
             for (int col = 0; col < 15; col++) {
                 LetterContainer square = new LetterContainer("");
