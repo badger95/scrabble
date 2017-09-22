@@ -40,7 +40,7 @@ class Letter extends StackPane {
 
         setOnDragDone(event -> {
             // successful drop
-            if (event.getTransferMode() == TransferMode.MOVE) {
+            if (event.getTransferMode() == TransferMode.MOVE && event.getGestureSource() != event.getGestureTarget()) {
                 text.setText("");
                 rectangle.setFill(Color.TAN);
             }
@@ -55,24 +55,6 @@ class Letter extends StackPane {
 
         setOnDragOver(event -> {
             event.acceptTransferModes(TransferMode.ANY);
-            event.consume();
-        });
-
-        setOnDragEntered(event -> {
-            if (event.getGestureSource() != this &&
-                    event.getDragboard().hasString() && text.getText().equals("")) {
-                rectangle.setFill(Color.YELLOW);
-            }
-            event.consume();
-        });
-
-        setOnDragExited(event -> {
-            if (text.getText().equals("")) {
-                rectangle.setFill(Color.TAN);
-            }
-            else {
-                rectangle.setFill(Color.SADDLEBROWN);
-            }
             event.consume();
         });
 
