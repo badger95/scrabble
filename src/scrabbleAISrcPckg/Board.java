@@ -62,7 +62,7 @@ class Board extends GridPane {
                 add(square, col, row);
             }
         }
-        setPadding(new Insets(25,25,25,25));
+        setPadding(new Insets(0,15,0,15));
     }
 
 

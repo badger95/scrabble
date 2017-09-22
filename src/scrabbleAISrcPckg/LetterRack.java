@@ -11,6 +11,6 @@ class LetterRack extends GridPane {
             letterContainer.addLetter(LetterBag.getRandomFromBag());
             add(letterContainer, i, 0);
         }
-        setPadding(new Insets(25,25,25,25));
+        setPadding(new Insets(0,15,15,15));
     }
 }
