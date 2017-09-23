@@ -30,10 +30,8 @@ class Letter extends StackPane {
                 ClipboardContent content = new ClipboardContent();
                 content.putString(text.getText());
                 originalValue = text.getText();
-                rectangle.setFill(Color.TAN);
-                text.setText("");
+                makeBlank();
                 db.setContent(content);
-
                 event.consume();
             }
         });
@@ -41,8 +39,7 @@ class Letter extends StackPane {
         setOnDragDone(event -> {
             // successful drop
             if (event.getTransferMode() == TransferMode.MOVE && event.getGestureSource() != event.getGestureTarget()) {
-                text.setText("");
-                rectangle.setFill(Color.TAN);
+                makeBlank();
             }
             // failed drop
             else {
@@ -53,10 +50,6 @@ class Letter extends StackPane {
             event.consume();
         });
 
-        setOnDragOver(event -> {
-            event.acceptTransferModes(TransferMode.ANY);
-            event.consume();
-        });
 
         setOnDragDropped(event -> {
             Dragboard db = event.getDragboard();
@@ -71,6 +64,11 @@ class Letter extends StackPane {
             event.consume();
         });
 
+    }
+
+    private void makeBlank() {
+        rectangle.setFill(Color.TAN);
+        text.setText("");
     }
 
 }

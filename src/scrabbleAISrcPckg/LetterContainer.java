@@ -10,12 +10,11 @@ import javafx.scene.text.Text;
 
 public class LetterContainer extends StackPane {
 
-    private String originalValue; // for repopulating display value on invalid user drag
     private Text text;
     private Rectangle rectangle;
     private Paint originalColor; // for repopulating square's original color
+    private String bonusText = ""; // denotes bonus text or star
     private boolean containsLetter = false;
-    private String descriptiveText = ""; // denotes bonus text or star
 
     LetterContainer() {
         new LetterContainer("");
@@ -29,7 +28,7 @@ public class LetterContainer extends StackPane {
         getChildren().addAll(rectangle, text);
 
         setOnDragOver(event -> {
-            event.acceptTransferModes(TransferMode.ANY);
+            event.acceptTransferModes(TransferMode.MOVE);
             event.consume();
         });
 
@@ -52,15 +51,12 @@ public class LetterContainer extends StackPane {
         setOnDragDropped(event -> {
             Dragboard db = event.getDragboard();
             event.acceptTransferModes(TransferMode.MOVE);
-            boolean success = false;
             if (db.hasString() && !containsLetter) {
-                text.setText(db.getString());
-                rectangle.setFill(Color.SADDLEBROWN);
-                success = true;
-                containsLetter = true;
-                setStyle("-fx-font: 12 arial;"); //required to make star square font size smaller
+                addLetter(db.getString());
+                event.setDropCompleted(true);
+            } else {
+                event.setDropCompleted(false);
             }
-            event.setDropCompleted(success);
             event.consume();
         });
 
@@ -71,13 +67,8 @@ public class LetterContainer extends StackPane {
                 db.setDragViewOffsetX(35);
                 db.setDragViewOffsetY(35);
                 ClipboardContent content = new ClipboardContent();
-                originalValue = text.getText();
                 content.putString(text.getText());
-                rectangle.setFill(originalColor);
-                text.setText(descriptiveText);
-                if (descriptiveText.equals("★")) {
-                    setStyle("-fx-font: 40 arial;");
-                }
+                removeLetter();
                 db.setContent(content);
 
                 event.consume();
@@ -86,20 +77,29 @@ public class LetterContainer extends StackPane {
 
         setOnDragDone(event -> {
             if (event.getTransferMode() == TransferMode.MOVE) {
-                text.setText(descriptiveText);
-                rectangle.setFill(originalColor);
-                containsLetter = false;
-                if (descriptiveText.equals("★")) {
-                    setStyle("-fx-font: 40 arial;");
-                }
+                removeLetter();
             } else {
-                text.setText(originalValue);
-                rectangle.setFill(Color.SADDLEBROWN);
-                setStyle("-fx-font: 12 arial;");
+                addLetter(event.getDragboard().getString());
             }
 
             event.consume();
         });
+    }
+
+    private void addLetter(String character) {
+        text.setText(character);
+        rectangle.setFill(Color.SADDLEBROWN);
+        setStyle("-fx-font: 12 arial;");
+        containsLetter = true;
+    }
+
+    private void removeLetter() {
+        text.setText(bonusText);
+        rectangle.setFill(originalColor);
+        containsLetter = false;
+        if (bonusText.equals("★")) {
+            setStyle("-fx-font: 40 arial;");
+        }
     }
 
     void setColor(Color c) {
@@ -114,16 +114,16 @@ public class LetterContainer extends StackPane {
         rectangle.setStroke(color);
     }
 
-    void setDescriptiveText(String descriptiveText) {
-        this.descriptiveText = descriptiveText;
+    void setBonusText(String bonusText) {
+        this.bonusText = bonusText;
     }
 
     void addLetter(Letter letter) {
         getChildren().add(letter);
     }
 
-    public String getDescriptiveText() {
-        return descriptiveText;
+    public String getBonusText() {
+        return bonusText;
     }
 
     public Rectangle getRectangle() {
