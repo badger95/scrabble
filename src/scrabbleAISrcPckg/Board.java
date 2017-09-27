@@ -12,8 +12,8 @@ import java.util.Set;
 
 class Board extends GridPane {
 
-    static Set<LetterContainer> newlyPopulatedContainers = new HashSet<LetterContainer>();
-    static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
+    static Set<BoardLetterContainer> newlyPopulatedContainers = new HashSet<BoardLetterContainer>();
+    static Map<BoardLetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
     static char[][] virtualBoard = new char[15][15];
 
     private static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
@@ -26,37 +26,20 @@ class Board extends GridPane {
         buildVirtualBoard();
         for (int row = 0; row < 15; row++) {
             for (int col = 0; col < 15; col++) {
-                LetterContainer square = new LetterContainer("", row, col);
-                if (row == 0 && col == 0 || row == 0 && col == 7 || row == 0 && col == 14
-                        || row == 7 && col == 0 || row == 7 && col == 14 || row == 14 && col == 0
-                        || row == 14 && col == 7 || row == 14 && col == 14) {
+                BoardLetterContainer square = new BoardLetterContainer("", row, col);
+                if (isCheckIfTripleWordScoreCoordinates(row, col)) {
                     square.setColor(Color.INDIANRED);
                     square.setDisplayText(TRIPLE_WORD_SCORE);
                     square.setBonusText(TRIPLE_WORD_SCORE);
-                } else if (row == 0 && col == 3 || row == 0 && col == 11 || row == 2 && col == 6 ||
-                        row == 2 && col == 8 || row == 3 && col == 0 || row == 3 && col == 7 ||
-                        row == 3 && col == 14 || row == 6 && col == 2 || row == 6 && col == 6||
-                        row == 6 && col == 8 || row == 6 && col == 12 || row == 7 && col == 3 ||
-                        row == 7 && col == 11 || row == 8 && col == 2 || row == 8 && col == 6 ||
-                        row == 8 && col == 8 || row == 8 && col == 12 || row == 11 && col == 0 ||
-                        row == 11 && col == 7 || row == 11 && col == 14 || row == 14 && col == 3 ||
-                        row == 14 && col == 11) {
+                } else if (checkIfDoubleLetterScoreCoordinates(row, col)) {
                     square.setColor(Color.LIGHTBLUE);
                     square.setDisplayText(DOUBLE_LETTER_SCORE);
                     square.setBonusText(DOUBLE_LETTER_SCORE);
-                } else if (row == 1 && col == 1 || row == 13 && col == 1 || row == 2 && col == 2 ||
-                        row == 12 && col == 2 || row == 3 && col == 3 || row == 11 && col == 3 ||
-                        row == 4 && col == 4 || row == 10 && col == 4 || row == 1 && col == 13 ||
-                        row == 2 && col == 12 || row == 3 && col == 11 || row == 4 && col == 10 ||
-                        row == 10 && col == 10 || row == 11 && col == 11 || row == 12 && col == 12 ||
-                        row == 13 && col == 13) {
+                } else if (checkIfDoubleWordScoreCoordinates(row, col)) {
                     square.setColor(Color.SALMON);
                     square.setDisplayText(DOUBLE_WORD_SCORE);
                     square.setBonusText(DOUBLE_WORD_SCORE);
-                } else if (row == 1 && col == 5 || row == 1 && col == 9 || row == 5 && col == 1 ||
-                        row == 5 && col == 5 || row == 5 && col == 9 || row == 5 && col == 13 ||
-                        row == 9 && col == 1 || row == 9 && col == 5 || row == 9 && col == 9 ||
-                        row == 9 &&  col == 13 || row == 13 && col == 5 || row == 13 && col == 9) {
+                } else if (isCheckIfTripleLetterScoreCoordinates(row, col)) {
                     square.setColor(Color.DEEPSKYBLUE);
                     square.setDisplayText(TRIPLE_LETTER_SCORE);
                     square.setBonusText(TRIPLE_LETTER_SCORE);
@@ -66,14 +49,36 @@ class Board extends GridPane {
                     square.setStyle("-fx-font: 40 arial;");
                     square.setBonusText("★");
                 }
-                else {
-                    square.setColor(Color.TAN);
-                }
-                square.colorBorder(Color.CHOCOLATE);
                 add(square, col, row);
             }
         }
         setPadding(new Insets(0,15,0,15));
+    }
+
+    boolean isCheckIfTripleLetterScoreCoordinates(int row, int col) {
+        return (row == 1 || row == 5 || row == 9 || row == 13) &&
+                (col == 1 || col == 5 || col == 9 || col == 13);
+    }
+
+    boolean checkIfDoubleWordScoreCoordinates(int row, int col) {
+        return (row == 1 || row == 2 || row == 3 || row == 4 || row == 10 || row == 11 || row == 12 || row == 13) &&
+                (col == row || (col + row == 14));
+    }
+
+    boolean isCheckIfTripleWordScoreCoordinates(int row, int col) {
+        return ((row == 0 || row == 14) && (col == 0 || col == 7 || col == 14)) ||
+                (row == 7 && (col == 0 || col == 14));
+    }
+
+    boolean checkIfDoubleLetterScoreCoordinates(int row, int col) {
+        return (row == 0 && col == 3 || row == 0 && col == 11 || row == 2 && col == 6 ||
+                row == 2 && col == 8 || row == 3 && col == 0 || row == 3 && col == 7 ||
+                row == 3 && col == 14 || row == 6 && col == 2 || row == 6 && col == 6 ||
+                row == 6 && col == 8 || row == 6 && col == 12 || row == 7 && col == 3 ||
+                row == 7 && col == 11 || row == 8 && col == 2 || row == 8 && col == 6 ||
+                row == 8 && col == 8 || row == 8 && col == 12 || row == 11 && col == 0 ||
+                row == 11 && col == 7 || row == 11 && col == 14 || row == 14 && col == 3 ||
+                row == 14 && col == 11);
     }
 
     private void buildVirtualBoard() {
@@ -84,7 +89,7 @@ class Board extends GridPane {
         }
     }
 
-    static void addLetterToRowColOnBoard(char c, LetterContainer letterContainer) {
+    static void addLetterToRowColOnBoard(char c, BoardLetterContainer letterContainer) {
         newlyPopulatedContainers.add(letterContainer);
         containersWithCommittedLetters.put(letterContainer, true);
         int[] coords = letterContainer.getCoordinates();
@@ -95,7 +100,7 @@ class Board extends GridPane {
         }
     }
 
-    static void clearSpaceOnBoard(LetterContainer letterContainer) {
+    static void clearSpaceOnBoard(BoardLetterContainer letterContainer) {
         int[] coords = letterContainer.getCoordinates();
         int row = coords[0];
         int col = coords[1];
@@ -104,7 +109,7 @@ class Board extends GridPane {
     }
 
     static void commitAllNewlyPopulatedContainers() {
-        for (LetterContainer letterContainer : newlyPopulatedContainers) {
+        for (BoardLetterContainer letterContainer : newlyPopulatedContainers) {
             containersWithCommittedLetters.put(letterContainer, true);
             letterContainer.setDisable(true);
         }

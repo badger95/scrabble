@@ -9,17 +9,13 @@ import javafx.scene.text.Text;
 
 import java.util.Objects;
 
-class Letter extends StackPane {
-    private Rectangle rectangle;
-    private Text text;
+class RackLetterContainer extends LetterContainer {
     private String originalValue;
 
-    Letter(char character) {
-        rectangle = new Rectangle(50,50);
-        text = new Text(character+"");
+    RackLetterContainer(String character, int row, int col) {
+        super(character, row, col);
         rectangle.setFill(Color.SADDLEBROWN);
         rectangle.setStroke(Color.CHOCOLATE);
-        getChildren().addAll(rectangle,text);
 
         setOnDragDetected(event -> {
             if (!Objects.equals(text.getText(), "") && !(text.getText().length() > 1) && !(text.getText().equals("★"))) {

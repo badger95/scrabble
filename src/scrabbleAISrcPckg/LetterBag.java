@@ -10,7 +10,7 @@ import java.util.Random;
 public final class LetterBag {
 
     private static LetterBag ourInstance;
-    private static final LinkedList<Letter> letters = new LinkedList<>(); //linked list allows for easy random removal
+    private static final LinkedList<Character> letters = new LinkedList<Character>(); //linked list allows for easy random removal
     private static Map<Character,Integer> letterScoreMappings = new HashMap<>();
     static {
         letterScoreMappings.put('A', 1);letterScoreMappings.put('B', 3);
@@ -69,21 +69,27 @@ public final class LetterBag {
 
     private void addInitialLetters(Character character, int numberOfOccurrences) {
 
-        if (isBagEmpty()) {letters.addFirst(new Letter(character));
+        if (isBagEmpty()) {letters.addFirst(character);
             for (int i = 0; i < numberOfOccurrences-1; i++) {
-                letters.add(new Letter(character));}
+                letters.add(character);}
         }
         else {
             for (int i = 0; i < numberOfOccurrences; i++) {
-                letters.add(new Letter(character));}
+                letters.add(character);}
         }
     }
 
 
-    static Letter getRandomFromBag(){
+    static String getRandomFromBagAsString(){
         Random random = new Random();
         int randint = random.nextInt(letters.size());
-        return letters.remove(randint);
+        return letters.remove(randint).toString();
+    }
+
+    static String getRandomFromBagAsChar(){
+        Random random = new Random();
+        int randint = random.nextInt(letters.size());
+        return letters.remove(randint).toString();
     }
 
     private static boolean isBagEmpty() {
@@ -100,7 +106,7 @@ public final class LetterBag {
         return letters.size();
     }
 
-    public static void addLetter(Letter letterTile) {
+    public static void addLetter(Character letterTile) {
         letters.add(letterTile);
     }
 
