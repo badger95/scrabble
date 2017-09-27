@@ -4,18 +4,29 @@ import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 
 class Board extends GridPane {
+
+    static Set<LetterContainer> newlyPopulatedContainers = new HashSet<LetterContainer>();
+    static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
+    static char[][] virtualBoard = new char[15][15];
 
     private static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
     private static final String DOUBLE_LETTER_SCORE = "Double\n Letter\n Score";
     private static final String DOUBLE_WORD_SCORE = "Double\n Word\n Score";
     private static final String TRIPLE_LETTER_SCORE = "Triple\nLetter\nScore";
 
+
     Board() {
+        buildVirtualBoard();
         for (int row = 0; row < 15; row++) {
             for (int col = 0; col < 15; col++) {
-                LetterContainer square = new LetterContainer("");
+                LetterContainer square = new LetterContainer("", row, col);
                 if (row == 0 && col == 0 || row == 0 && col == 7 || row == 0 && col == 14
                         || row == 7 && col == 0 || row == 7 && col == 14 || row == 14 && col == 0
                         || row == 14 && col == 7 || row == 14 && col == 14) {
@@ -65,5 +76,53 @@ class Board extends GridPane {
         setPadding(new Insets(0,15,0,15));
     }
 
+    private void buildVirtualBoard() {
+        for (int row = 0; row < 15; row++) {
+            for (int col = 0; col < 15; col++) {
+                virtualBoard[row][col] = ' ';
+            }
+        }
+    }
+
+    static void addLetterToRowColOnBoard(char c, LetterContainer letterContainer) {
+        newlyPopulatedContainers.add(letterContainer);
+        containersWithCommittedLetters.put(letterContainer, true);
+        int[] coords = letterContainer.getCoordinates();
+        int row = coords[0];
+        int col = coords[1];
+        if (virtualBoard[row][col] == ' ') {
+            virtualBoard[row][col] = c;
+        }
+    }
+
+    static void clearSpaceOnBoard(LetterContainer letterContainer) {
+        int[] coords = letterContainer.getCoordinates();
+        int row = coords[0];
+        int col = coords[1];
+        virtualBoard[row][col] = ' ';
+        newlyPopulatedContainers.remove(letterContainer);
+    }
+
+    static void commitAllNewlyPopulatedContainers() {
+        for (LetterContainer letterContainer : newlyPopulatedContainers) {
+            containersWithCommittedLetters.put(letterContainer, true);
+            letterContainer.setDisable(true);
+        }
+    }
+
+
+    static void printBoard() {
+        System.out.println("-------------------------------------------------------------------------------" +
+                "------------------------------------------------------------------------");
+        for (int row = 0; row < 15; row++) {
+            System.out.print("|    ");
+            for (int col = 0; col <15; col++) {
+                System.out.print(virtualBoard[row][col] + "    |    ");
+            }
+            System.out.println();
+            System.out.println("-------------------------------------------------------------------------------" +
+                    "------------------------------------------------------------------------");
+        }
+    }
 
 }

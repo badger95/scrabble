@@ -15,12 +15,16 @@ public class LetterContainer extends StackPane {
     private Paint originalColor; // for repopulating square's original color
     private String bonusText = ""; // denotes bonus text or star
     private boolean containsLetter = false;
+    private int row;
+    private int col;
 
     LetterContainer() {
-        new LetterContainer("");
+        new LetterContainer("", -1, -1);
     }
 
-    LetterContainer(String displaySting) {
+    LetterContainer(String displaySting, final int row, final int col) {
+        this.row = row;
+        this.col = col;
         text = new Text(displaySting);
         rectangle = new Rectangle();
         rectangle.setHeight(50);
@@ -33,12 +37,12 @@ public class LetterContainer extends StackPane {
         });
 
         setOnDragEntered(event -> {
-                if (event.getGestureSource() != this &&
-                        event.getDragboard().hasString() && !containsLetter) {
-                    originalColor = rectangle.getFill();
-                    rectangle.setFill(Color.YELLOW);
-                }
-                event.consume();
+            if (event.getGestureSource() != this &&
+                    event.getDragboard().hasString() && !containsLetter) {
+                originalColor = rectangle.getFill();
+                rectangle.setFill(Color.YELLOW);
+            }
+            event.consume();
         });
 
         setOnDragExited(event -> {
@@ -76,7 +80,8 @@ public class LetterContainer extends StackPane {
         });
 
         setOnDragDone(event -> {
-            if (event.getTransferMode() == TransferMode.MOVE) {
+            if (event.getTransferMode() == TransferMode.MOVE &&
+                    event.getGestureSource() != event.getGestureTarget()) {
                 removeLetter();
             } else {
                 addLetter(event.getDragboard().getString());
@@ -89,17 +94,21 @@ public class LetterContainer extends StackPane {
     private void addLetter(String character) {
         text.setText(character);
         rectangle.setFill(Color.SADDLEBROWN);
+        Board.addLetterToRowColOnBoard(character.toCharArray()[0], this);
         setStyle("-fx-font: 12 arial;");
         containsLetter = true;
+        Board.printBoard();
     }
 
     private void removeLetter() {
         text.setText(bonusText);
+        Board.clearSpaceOnBoard(this);
         rectangle.setFill(originalColor);
         containsLetter = false;
         if (bonusText.equals("★")) {
             setStyle("-fx-font: 40 arial;");
         }
+        Board.printBoard();
     }
 
     void setColor(Color c) {
@@ -122,16 +131,12 @@ public class LetterContainer extends StackPane {
         getChildren().add(letter);
     }
 
+    public int[] getCoordinates() {
+        return new int[] {row, col};
+    }
+
     public String getBonusText() {
         return bonusText;
-    }
-
-    public Rectangle getRectangle() {
-        return rectangle;
-    }
-
-    public void setRectangle(Rectangle rectangle) {
-        this.rectangle = rectangle;
     }
 
     public Text getText() {

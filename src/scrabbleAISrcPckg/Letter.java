@@ -22,7 +22,7 @@ class Letter extends StackPane {
         getChildren().addAll(rectangle,text);
 
         setOnDragDetected(event -> {
-            if (!Objects.equals(text.getText(), "") || text.getText().length() > 1 || text.getText().equals("★")) {
+            if (!Objects.equals(text.getText(), "") && !(text.getText().length() > 1) && !(text.getText().equals("★"))) {
                 Dragboard db = startDragAndDrop(TransferMode.MOVE);
                 db.setDragView(snapshot(null, new WritableImage(51, 51)));
                 db.setDragViewOffsetX(35);
@@ -34,6 +34,11 @@ class Letter extends StackPane {
                 db.setContent(content);
                 event.consume();
             }
+        });
+
+        setOnDragOver(event -> {
+            event.acceptTransferModes(TransferMode.MOVE);
+            event.consume();
         });
 
         setOnDragDone(event -> {

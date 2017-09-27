@@ -22,4 +22,10 @@ abstract class Player {
         return letterRack;
     }
 
+    public void clearLetterRack() {
+        for (Letter letter : letterRack.getL) {
+
+        }
+    }
+
 }

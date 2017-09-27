@@ -12,6 +12,7 @@ class Mutex {
     }
 
     synchronized void switchTurns(){
+        Board.commitAllNewlyPopulatedContainers();
         activePlayerId = (activePlayerId + 1) % numberOfPlayers;
         notifyAll();
     }
