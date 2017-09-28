@@ -32,7 +32,6 @@ public class Main extends Application {
         aiThread.start();
         humanThread.start();
         Board board = new Board();
-        Board.printBoard();
         board.setAlignment(Pos.TOP_CENTER);
         horizontalOutermostContainer.getChildren().add(board);
         sideBar.getChildren().addAll(new Label("Player 0"), aiPlayer.getLetterRack(),

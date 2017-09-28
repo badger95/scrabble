@@ -2,16 +2,19 @@ package scrabbleAISrcPckg;
 
 import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 
 class LetterRack extends GridPane {
 
-    RackLetterContainer[] letters = new RackLetterContainer[7];
+    LetterContainer[] letters = new LetterContainer[7];
 
     LetterRack() {
         for (int i = 0; i < 7; i++){
-            RackLetterContainer newLetter = new RackLetterContainer(LetterBag.getRandomFromBagAsString(), 0, i);
-            add(newLetter, i, 0);
-            letters[i] = newLetter;
+            String letter = LetterBag.getRandomFromBagAsString();
+            LetterContainer newLetterContainer = new LetterContainer("", Color.TAN,0, i);
+            newLetterContainer.addLetter(letter);
+            add(newLetterContainer, i, 0);
+            letters[i] = newLetterContainer;
         }
         setPadding(new Insets(0,15,15,15));
     }

@@ -12,8 +12,8 @@ import java.util.Set;
 
 class Board extends GridPane {
 
-    static Set<BoardLetterContainer> newlyPopulatedContainers = new HashSet<BoardLetterContainer>();
-    static Map<BoardLetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
+    static Set<LetterContainer> newlyPopulatedContainers = new HashSet<LetterContainer>();
+    static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
     static char[][] virtualBoard = new char[15][15];
 
     private static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
@@ -26,28 +26,20 @@ class Board extends GridPane {
         buildVirtualBoard();
         for (int row = 0; row < 15; row++) {
             for (int col = 0; col < 15; col++) {
-                BoardLetterContainer square = new BoardLetterContainer("", row, col);
+                LetterContainer square;
                 if (isCheckIfTripleWordScoreCoordinates(row, col)) {
-                    square.setColor(Color.INDIANRED);
-                    square.setDisplayText(TRIPLE_WORD_SCORE);
-                    square.setBonusText(TRIPLE_WORD_SCORE);
+                    square = new LetterContainer(TRIPLE_WORD_SCORE, Color.INDIANRED, row, col);
                 } else if (checkIfDoubleLetterScoreCoordinates(row, col)) {
-                    square.setColor(Color.LIGHTBLUE);
-                    square.setDisplayText(DOUBLE_LETTER_SCORE);
-                    square.setBonusText(DOUBLE_LETTER_SCORE);
+                    square = new LetterContainer(DOUBLE_LETTER_SCORE, Color.LIGHTBLUE, row, col);
                 } else if (checkIfDoubleWordScoreCoordinates(row, col)) {
-                    square.setColor(Color.SALMON);
-                    square.setDisplayText(DOUBLE_WORD_SCORE);
-                    square.setBonusText(DOUBLE_WORD_SCORE);
+                    square = new LetterContainer(DOUBLE_WORD_SCORE, Color.SALMON, row, col);
                 } else if (isCheckIfTripleLetterScoreCoordinates(row, col)) {
-                    square.setColor(Color.DEEPSKYBLUE);
-                    square.setDisplayText(TRIPLE_LETTER_SCORE);
-                    square.setBonusText(TRIPLE_LETTER_SCORE);
+                    square = new LetterContainer(TRIPLE_LETTER_SCORE, Color.DEEPSKYBLUE, row, col);
                 } else if (row == 7 && col == 7) {
-                    square.setColor(Color.SALMON);
-                    square.setDisplayText("★");
+                    square = new LetterContainer("★", Color.SALMON, row, col);
                     square.setStyle("-fx-font: 40 arial;");
-                    square.setBonusText("★");
+                } else {
+                    square = new LetterContainer("", Color.TAN, row, col);
                 }
                 add(square, col, row);
             }
@@ -89,7 +81,7 @@ class Board extends GridPane {
         }
     }
 
-    static void addLetterToRowColOnBoard(char c, BoardLetterContainer letterContainer) {
+    static void addLetterToRowColOnBoard(char c, LetterContainer letterContainer) {
         newlyPopulatedContainers.add(letterContainer);
         containersWithCommittedLetters.put(letterContainer, true);
         int[] coords = letterContainer.getCoordinates();
@@ -100,7 +92,7 @@ class Board extends GridPane {
         }
     }
 
-    static void clearSpaceOnBoard(BoardLetterContainer letterContainer) {
+    static void clearSpaceOnBoard(LetterContainer letterContainer) {
         int[] coords = letterContainer.getCoordinates();
         int row = coords[0];
         int col = coords[1];
@@ -109,7 +101,7 @@ class Board extends GridPane {
     }
 
     static void commitAllNewlyPopulatedContainers() {
-        for (BoardLetterContainer letterContainer : newlyPopulatedContainers) {
+        for (LetterContainer letterContainer : newlyPopulatedContainers) {
             containersWithCommittedLetters.put(letterContainer, true);
             letterContainer.setDisable(true);
         }
@@ -117,16 +109,18 @@ class Board extends GridPane {
 
 
     static void printBoard() {
-        System.out.println("-------------------------------------------------------------------------------" +
-                "------------------------------------------------------------------------");
-        for (int row = 0; row < 15; row++) {
-            System.out.print("|    ");
-            for (int col = 0; col <15; col++) {
-                System.out.print(virtualBoard[row][col] + "    |    ");
-            }
-            System.out.println();
+        if (!containersWithCommittedLetters.isEmpty()) {
             System.out.println("-------------------------------------------------------------------------------" +
                     "------------------------------------------------------------------------");
+            for (int row = 0; row < 15; row++) {
+                System.out.print("|    ");
+                for (int col = 0; col < 15; col++) {
+                    System.out.print(virtualBoard[row][col] + "    |    ");
+                }
+                System.out.println();
+                System.out.println("-------------------------------------------------------------------------------" +
+                        "------------------------------------------------------------------------");
+            }
         }
     }
 
