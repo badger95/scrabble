@@ -4,9 +4,11 @@ import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
+import java.util.Objects;
+
 class LetterRack extends GridPane {
 
-    LetterContainer[] letters = new LetterContainer[7];
+    private LetterContainer[] letters = new LetterContainer[7];
 
     LetterRack() {
         for (int i = 0; i < 7; i++){
@@ -17,5 +19,22 @@ class LetterRack extends GridPane {
             letters[i] = newLetterContainer;
         }
         setPadding(new Insets(0,15,15,15));
+    }
+
+    public LetterContainer[] getLetters() {
+        return letters;
+    }
+
+    public void setLetters(LetterContainer[] letters) {
+        this.letters = letters;
+    }
+
+    boolean isEmpty() {
+        for (LetterContainer lc : letters) {
+            if (!Objects.equals(lc.getText(), "")) {
+                return false;
+            }
+        }
+        return true;
     }
 }

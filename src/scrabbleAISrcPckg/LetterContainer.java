@@ -11,13 +11,13 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
 
-public class LetterContainer extends StackPane {
+class LetterContainer extends StackPane {
 
-    Text text; // what actually gets displayed
-    Rectangle rectangle;
+    private Text text; // what actually gets displayed
+    private Rectangle rectangle;
     private int row;
     private int col;
-    boolean containsLetter = false;
+    private boolean containsLetter = false;
     private Paint originalColor;
     private String bonusText = ""; // denotes bonus text or star
 
@@ -102,7 +102,7 @@ public class LetterContainer extends StackPane {
         setStyle("-fx-font: 12 arial;");
         containsLetter = true;
         if (this.getParent() instanceof Board) {
-            Board.addLetterToRowColOnBoard(character.toCharArray()[0], this);
+            Board.addLetterToRowColOnBoard(character.charAt(0), this);
         }
         Board.printBoard();
     }
@@ -120,27 +120,15 @@ public class LetterContainer extends StackPane {
         Board.printBoard();
     }
 
-    public String getText() {
+    String getText() {
         return text.getText();
-    }
-
-    void setColor(Color c) {
-        rectangle.setFill(c);
-    }
-
-    void setDisplayText(String text) {
-        this.text.setText(text);
     }
 
     int[] getCoordinates() {
         return new int[] {row, col};
     }
 
-    void setBonusText(String bonusText) {
-        this.bonusText = bonusText;
-    }
-
-    public String getBonusText() {
+    String getBonusText() {
         return bonusText;
     }
 }

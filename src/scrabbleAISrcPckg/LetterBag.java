@@ -11,7 +11,7 @@ public final class LetterBag {
 
     private static LetterBag ourInstance;
     private static final LinkedList<Character> letters = new LinkedList<Character>(); //linked list allows for easy random removal
-    private static Map<Character,Integer> letterScoreMappings = new HashMap<>();
+    static Map<Character,Integer> letterScoreMappings = new HashMap<>();
     static {
         letterScoreMappings.put('A', 1);letterScoreMappings.put('B', 3);
         letterScoreMappings.put('C', 3);letterScoreMappings.put('D', 2);
@@ -111,6 +111,6 @@ public final class LetterBag {
     }
 
     public int getLettersScore(String letter) {
-           return letterScoreMappings.get(letter.toCharArray()[0]);
+           return letterScoreMappings.get(letter.charAt(0));
     }
 }

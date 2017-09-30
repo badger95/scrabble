@@ -12,7 +12,7 @@ import java.util.Set;
 
 class Board extends GridPane {
 
-    static Set<LetterContainer> newlyPopulatedContainers = new HashSet<LetterContainer>();
+    static Set<LetterContainer> newlyPopulatedContainers = new HashSet<>();
     static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
     static char[][] virtualBoard = new char[15][15];
 
@@ -47,22 +47,22 @@ class Board extends GridPane {
         setPadding(new Insets(0,15,0,15));
     }
 
-    boolean isCheckIfTripleLetterScoreCoordinates(int row, int col) {
+    private boolean isCheckIfTripleLetterScoreCoordinates(int row, int col) {
         return (row == 1 || row == 5 || row == 9 || row == 13) &&
                 (col == 1 || col == 5 || col == 9 || col == 13);
     }
 
-    boolean checkIfDoubleWordScoreCoordinates(int row, int col) {
+    private boolean checkIfDoubleWordScoreCoordinates(int row, int col) {
         return (row == 1 || row == 2 || row == 3 || row == 4 || row == 10 || row == 11 || row == 12 || row == 13) &&
                 (col == row || (col + row == 14));
     }
 
-    boolean isCheckIfTripleWordScoreCoordinates(int row, int col) {
+    private boolean isCheckIfTripleWordScoreCoordinates(int row, int col) {
         return ((row == 0 || row == 14) && (col == 0 || col == 7 || col == 14)) ||
                 (row == 7 && (col == 0 || col == 14));
     }
 
-    boolean checkIfDoubleLetterScoreCoordinates(int row, int col) {
+    private boolean checkIfDoubleLetterScoreCoordinates(int row, int col) {
         return (row == 0 && col == 3 || row == 0 && col == 11 || row == 2 && col == 6 ||
                 row == 2 && col == 8 || row == 3 && col == 0 || row == 3 && col == 7 ||
                 row == 3 && col == 14 || row == 6 && col == 2 || row == 6 && col == 6 ||
@@ -107,7 +107,6 @@ class Board extends GridPane {
         }
     }
 
-
     static void printBoard() {
         if (!containersWithCommittedLetters.isEmpty()) {
             System.out.println("-------------------------------------------------------------------------------" +
@@ -122,6 +121,35 @@ class Board extends GridPane {
                         "------------------------------------------------------------------------");
             }
         }
+    }
+
+    private static int getScoreForLetter(LetterRack letterRack) {
+        int turnScore = 0;
+        int numTripleWordBonuses = 0;
+        int numDoubleWordBonuses = 0;
+        int letterScore = 0;
+        int wordScore = 0;
+        for (LetterContainer newlyPopulatedContainer : newlyPopulatedContainers) {
+            char c = newlyPopulatedContainer.getText().charAt(0);
+            letterScore = LetterBag.letterScoreMappings.get(c);
+            switch(newlyPopulatedContainer.getBonusText()) {
+                case DOUBLE_WORD_SCORE:
+                    numDoubleWordBonuses++;
+                    break;
+                case TRIPLE_LETTER_SCORE:
+                    letterScore = letterScore * 3;
+                    break;
+                case DOUBLE_LETTER_SCORE:
+                    letterScore = letterScore * 2;
+                    break;
+                case TRIPLE_WORD_SCORE:
+                    numTripleWordBonuses++;
+                    break;
+            }
+        }
+        // need to find a way to identify newlypopulated letter containers as parts of words to apply word score bonuses
+        turnScore += letterRack.isEmpty() ? 0 : 50;
+        return turnScore;
     }
 
 }
