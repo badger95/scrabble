@@ -13,7 +13,7 @@ class LetterRack extends GridPane {
     LetterRack() {
         for (int i = 0; i < 7; i++){
             String letter = LetterBag.getRandomFromBagAsString();
-            LetterContainer newLetterContainer = new LetterContainer("", Color.TAN,0, i);
+            LetterContainer newLetterContainer = new LetterContainer("", Color.TAN,0, i, this);
             newLetterContainer.addLetter(letter);
             add(newLetterContainer, i, 0);
             letters[i] = newLetterContainer;

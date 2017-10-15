@@ -4,6 +4,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -15,16 +16,14 @@ class LetterContainer extends StackPane {
 
     private Text text; // what actually gets displayed
     private Rectangle rectangle;
-    private int row;
-    private int col;
     private boolean containsLetter = false;
     private Paint originalColor;
     private String bonusText = ""; // denotes bonus text or star
+    private Location location;
 
 
-    LetterContainer(String displaySting, Paint originalColor, final int row, final int col) {
-        this.col = col;
-        this.row = row;
+    LetterContainer(String displaySting, Paint originalColor, final int row, final int col, GridPane parent) {
+        location = new Location(col, row, parent);
         text = new Text(displaySting);
         bonusText = displaySting;
         rectangle = new Rectangle();
@@ -124,11 +123,40 @@ class LetterContainer extends StackPane {
         return text.getText();
     }
 
-    int[] getCoordinates() {
-        return new int[] {row, col};
+    Location getLocation() {
+        return location;
     }
 
     String getBonusText() {
         return bonusText;
+    }
+
+    class Location {
+
+        private int row;
+        private int col;
+        private GridPane parent;
+
+        Location(int row, int col, GridPane parentContainer){
+            this.row = row;
+            this.col = col;
+            this.parent = parentContainer;
+        }
+
+        int getRow() {
+            return row;
+        }
+
+        int getCol() {
+            return col;
+        }
+
+        GridPane getParent() {
+            return parent;
+        }
+
+        boolean equals(Location location) {
+            return (location.parent.equals(parent) && row == location.row && col == location.col);
+        }
     }
 }

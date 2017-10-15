@@ -4,22 +4,20 @@ import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 class Board extends GridPane {
 
-    static Set<LetterContainer> newlyPopulatedContainers = new HashSet<>();
-    static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
-    static char[][] virtualBoard = new char[15][15];
+    private static Set<LetterContainer> newlyPopulatedContainers = new HashSet<>();
+    private static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
+    private static char[][] virtualBoard = new char[15][15];
 
     private static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
     private static final String DOUBLE_LETTER_SCORE = "Double\n Letter\n Score";
     private static final String DOUBLE_WORD_SCORE = "Double\n Word\n Score";
     private static final String TRIPLE_LETTER_SCORE = "Triple\nLetter\nScore";
+    private static final String STAR = "★";
 
 
     Board() {
@@ -28,18 +26,18 @@ class Board extends GridPane {
             for (int col = 0; col < 15; col++) {
                 LetterContainer square;
                 if (isCheckIfTripleWordScoreCoordinates(row, col)) {
-                    square = new LetterContainer(TRIPLE_WORD_SCORE, Color.INDIANRED, row, col);
+                    square = new LetterContainer(TRIPLE_WORD_SCORE, Color.INDIANRED, row, col, this);
                 } else if (checkIfDoubleLetterScoreCoordinates(row, col)) {
-                    square = new LetterContainer(DOUBLE_LETTER_SCORE, Color.LIGHTBLUE, row, col);
+                    square = new LetterContainer(DOUBLE_LETTER_SCORE, Color.LIGHTBLUE, row, col, this);
                 } else if (checkIfDoubleWordScoreCoordinates(row, col)) {
-                    square = new LetterContainer(DOUBLE_WORD_SCORE, Color.SALMON, row, col);
+                    square = new LetterContainer(DOUBLE_WORD_SCORE, Color.SALMON, row, col, this);
                 } else if (isCheckIfTripleLetterScoreCoordinates(row, col)) {
-                    square = new LetterContainer(TRIPLE_LETTER_SCORE, Color.DEEPSKYBLUE, row, col);
+                    square = new LetterContainer(TRIPLE_LETTER_SCORE, Color.DEEPSKYBLUE, row, col, this);
                 } else if (row == 7 && col == 7) {
-                    square = new LetterContainer("★", Color.SALMON, row, col);
+                    square = new LetterContainer(STAR, Color.SALMON, row, col, this);
                     square.setStyle("-fx-font: 40 arial;");
                 } else {
-                    square = new LetterContainer("", Color.TAN, row, col);
+                    square = new LetterContainer("", Color.TAN, row, col, this);
                 }
                 add(square, col, row);
             }
@@ -84,18 +82,16 @@ class Board extends GridPane {
     static void addLetterToRowColOnBoard(char c, LetterContainer letterContainer) {
         newlyPopulatedContainers.add(letterContainer);
         containersWithCommittedLetters.put(letterContainer, true);
-        int[] coords = letterContainer.getCoordinates();
-        int row = coords[0];
-        int col = coords[1];
+        int row = letterContainer.getLocation().getRow();
+        int col = letterContainer.getLocation().getCol();
         if (virtualBoard[row][col] == ' ') {
             virtualBoard[row][col] = c;
         }
     }
 
     static void clearSpaceOnBoard(LetterContainer letterContainer) {
-        int[] coords = letterContainer.getCoordinates();
-        int row = coords[0];
-        int col = coords[1];
+        int col = letterContainer.getLocation().getCol();
+        int row = letterContainer.getLocation().getRow();
         virtualBoard[row][col] = ' ';
         newlyPopulatedContainers.remove(letterContainer);
     }
@@ -123,17 +119,27 @@ class Board extends GridPane {
         }
     }
 
-    private static int getScoreForLetter(LetterRack letterRack) {
-        int turnScore = 0;
+    private static int getMoveScore(List<Word> words , Player player) {
+        int moveScore = 0;
+        for (Word word : words) {
+            moveScore = getWordScore(word);
+        }
+        moveScore += player.getLetterRack().isEmpty() ? 0 : 50;
+        return moveScore;
+    }
+
+    private static int getWordScore(Word word) {
+        int wordScore = 0;
         int numTripleWordBonuses = 0;
         int numDoubleWordBonuses = 0;
-        int letterScore = 0;
-        int wordScore = 0;
-        for (LetterContainer newlyPopulatedContainer : newlyPopulatedContainers) {
-            char c = newlyPopulatedContainer.getText().charAt(0);
-            letterScore = LetterBag.letterScoreMappings.get(c);
-            switch(newlyPopulatedContainer.getBonusText()) {
+        int i = 0;
+        LetterContainer[] containers = word.getContainersOfWord();
+        for (char c : word.getWordAsString().toCharArray()) {
+            LetterContainer container = containers[i];
+            int letterScore = LetterBag.letterScoreMappings.get(c);
+            switch (container.getBonusText()) {
                 case DOUBLE_WORD_SCORE:
+                case STAR:
                     numDoubleWordBonuses++;
                     break;
                 case TRIPLE_LETTER_SCORE:
@@ -146,10 +152,11 @@ class Board extends GridPane {
                     numTripleWordBonuses++;
                     break;
             }
+            wordScore += letterScore;
+            i++;
         }
-        // need to find a way to identify newlypopulated letter containers as parts of words to apply word score bonuses
-        turnScore += letterRack.isEmpty() ? 0 : 50;
-        return turnScore;
+        wordScore = wordScore * 2 * numDoubleWordBonuses * 3 * numTripleWordBonuses;
+        return wordScore;
     }
 
 }
