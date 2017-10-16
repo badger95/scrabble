@@ -25,8 +25,12 @@ class Mutex {
 
     }
 
-    String getWhoseTurnIsIt() {
+    String getWhoseTurnLabel() {
         return "Player " + activePlayerId + " 's turn.";
+    }
+
+    int getPlayerWhoseTurnItis() {
+        return activePlayerId;
     }
 
 }

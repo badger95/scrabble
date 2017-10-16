@@ -123,6 +123,10 @@ class LetterContainer extends StackPane {
         return text.getText();
     }
 
+    void setText(String str) {
+        text.setText(str);
+    }
+
     Location getLocation() {
         return location;
     }

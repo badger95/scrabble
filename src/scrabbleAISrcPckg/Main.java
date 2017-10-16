@@ -16,7 +16,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         // FXMLLoader.load(getClass().getResource("sample.fxml"));
         ScrollPane root = new ScrollPane(); // highest level container
-        root.setPrefSize(1200,800);
+        root.setPrefSize(1200, 800);
         HBox horizontalOutermostContainer = new HBox(); // holds board, and sideBar
         VBox sideBar = new VBox(); // holds tileRacks, player scores, and action buttons
         sideBar.setAlignment(Pos.CENTER_RIGHT);
@@ -35,14 +35,19 @@ public class Main extends Application {
         board.setAlignment(Pos.TOP_CENTER);
         horizontalOutermostContainer.getChildren().add(board);
         sideBar.getChildren().addAll(new Label("Player 0"), aiPlayer.getLetterRack(),
-                                     new Label("Player 1"), humanPlayer.getLetterRack());
+                new Label("Player 1"), humanPlayer.getLetterRack());
         HBox turnBar = new HBox(); // holds buttons and whoseTurn label
         Button dumpButton = new Button("Dump Letters");
-        Button endTurnButton = new Button("End Turn");
-        Label whoseTurn = new Label(mutex.getWhoseTurnIsIt());
-        endTurnButton.setOnMouseClicked(event -> {
+        dumpButton.setOnMouseClicked(e -> {
+            humanPlayer.dumpLetters();
             mutex.switchTurns();
-            whoseTurn.setText(mutex.getWhoseTurnIsIt());
+        });
+        Button endTurnButton = new Button("End Turn");
+        Label whoseTurn = new Label(mutex.getWhoseTurnLabel());
+        endTurnButton.setOnMouseClicked(event -> {
+            humanPlayer.fillLetterRack();
+            mutex.switchTurns();
+            whoseTurn.setText(mutex.getWhoseTurnLabel());
         });
         turnBar.getChildren().addAll(endTurnButton, dumpButton, whoseTurn);
         turnBar.setSpacing(10);
