@@ -2,7 +2,6 @@ package scrabbleAISrcPckg;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static scrabbleAISrcPckg.Board.*;
@@ -55,7 +54,7 @@ public class GameManager {
         return wordScore;
     }
 
-    // Naively search all four squares adjacent to each newly committed tile
+    // Naively search all four squares adjacent to each newly committed tile for empty neighbor
     Set<LetterContainer> findEmptyAdjacentSquares(Word newlyPlacedWord) {
         LetterContainer[] letterContainersOfWord = newlyPlacedWord.getContainersOfWord();
         Set<LetterContainer> emptyAdjacentSquares = new HashSet<>();
@@ -86,6 +85,39 @@ public class GameManager {
         }
 
         return emptyAdjacentSquares;
+    }
+
+    // Naively search all four squares adjacent to each newly committed tile for nonempty neighbors
+    Set<LetterContainer> findNonemptyAdjacentSquares(Word newlyPlacedWord) {
+        LetterContainer[] letterContainersOfWord = newlyPlacedWord.getContainersOfWord();
+        Set<LetterContainer> nonemptyAdjacentSquares = new HashSet<>();
+        for (LetterContainer letterContainer : letterContainersOfWord) {
+            int row = letterContainer.getLocation().getRow();
+            int col = letterContainer.getLocation().getCol();
+            int oneRowDown = row < 14 ? row + 1 : -1;
+            int oneRowUp = row > 0 ? row - 1 : -1;
+            int oneColRight = col < 14 ? col + 1 : -1;
+            int oneColLeft = col > 0 ? col - 1 : -1;
+            // clockwise check here ^ -> down <-
+            if (oneRowUp != -1 && !checkSquareIsEmpty(oneRowUp, col)) {
+                LetterContainer nonemptyLC = board.getRefToSquareByRowColumn(oneRowUp, col);
+                nonemptyAdjacentSquares.add(nonemptyLC);
+            }
+            if (oneColRight != -1 && !checkSquareIsEmpty(row, oneColRight)) {
+                LetterContainer nonemptyLC = board.getRefToSquareByRowColumn(row, oneColRight);
+                nonemptyAdjacentSquares.add(nonemptyLC);
+            }
+            if (oneRowDown != -1 && !checkSquareIsEmpty(oneRowDown, col)) {
+                LetterContainer nonemptyLC = board.getRefToSquareByRowColumn(oneRowDown, col);
+                nonemptyAdjacentSquares.add(nonemptyLC);
+            }
+            if (oneColLeft != -1 && !checkSquareIsEmpty(row, oneColLeft)) {
+                LetterContainer nonemptyLC = board.getRefToSquareByRowColumn(row, oneColLeft);
+                nonemptyAdjacentSquares.add(nonemptyLC);
+            }
+        }
+
+        return nonemptyAdjacentSquares;
     }
 
     private boolean checkSquareIsEmpty(int row, int col) {

@@ -21,8 +21,6 @@ public class Main extends Application {
         // FXMLLoader.load(getClass().getResource("sample.fxml"));
         WordChecker wordChecker = new WordChecker();
         buildDictionaryTrie(wordChecker);
-        System.out.println("" + wordChecker.isAWordInDictionary("whatTheHeck"));
-        System.out.println("" + wordChecker.isAWordInDictionary("abominable"));
         ScrollPane root = new ScrollPane(); // highest level container
         root.setPrefSize(1200, 800);
         HBox horizontalOutermostContainer = new HBox(); // holds board, and sideBar
