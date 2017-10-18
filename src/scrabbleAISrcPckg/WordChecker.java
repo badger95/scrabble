@@ -1,15 +1,16 @@
 
 package scrabbleAISrcPckg;
 
-class Trie {
+class WordChecker {
     private TrieNode root;
 
-    Trie() {
+    WordChecker() {
         root = new TrieNode();
     }
 
     void insert(String word) {
         TrieNode parent = root;
+        word = word.toLowerCase();
         for (int i = 0; i < word.length(); i++) {
             int index = word.charAt(i) - 'a';
             if (parent.children[index] == null) {
@@ -20,10 +21,13 @@ class Trie {
                 parent = parent.children[index];
             }
         }
+
         parent.endOfWord = true;
     }
 
     private TrieNode search(String s) {
+        s = s.toLowerCase();
+        
         TrieNode parent = root;
         for (int i = 0; i < s.length(); i++) {
             int index = s.charAt(i) - 'a';

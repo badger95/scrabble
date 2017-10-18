@@ -10,11 +10,19 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         // FXMLLoader.load(getClass().getResource("sample.fxml"));
+        WordChecker wordChecker = new WordChecker();
+        buildDictionaryTrie(wordChecker);
+        System.out.println("" + wordChecker.isAWordInDictionary("whatTheHeck"));
+        System.out.println("" + wordChecker.isAWordInDictionary("abominable"));
         ScrollPane root = new ScrollPane(); // highest level container
         root.setPrefSize(1200, 800);
         HBox horizontalOutermostContainer = new HBox(); // holds board, and sideBar
@@ -32,6 +40,7 @@ public class Main extends Application {
         aiThread.start();
         humanThread.start();
         Board board = new Board();
+        GameManager gameManager = new GameManager(board);
         board.setAlignment(Pos.TOP_CENTER);
         horizontalOutermostContainer.getChildren().add(board);
         sideBar.getChildren().addAll(new Label("Player 0"), aiPlayer.getLetterRack(),
@@ -58,6 +67,14 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    private void buildDictionaryTrie(WordChecker wordChecker) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new FileReader("src/scrabbleAISrcPckg/wordList"));
+        String line = bufferedReader.readLine();
+        while (line != null) {
+            wordChecker.insert(line);
+            line = bufferedReader.readLine();
+        }
+    }
 
     public static void main(String[] args) {
         launch(args);

@@ -28,3 +28,6 @@ Under North American tournament rules, the game ends when:
 There are no more tiles left to draw, and one player has used up his or her tiles (known as playing out), or
 Six consecutive scoreless turns have occurred.
 If a player plays out, the sum of the values of his opponents' tiles is added to his score, while each of the opponents' scores is reduced by the sum on his or her rack. In tournament play, the player playing out receives twice the value of his opponent's rack, and the opponent's score is unchanged. This does not affect point spread, but makes scoring slightly easier.
+
+<h5 Dictionary <5>
+Word list taken from: https://raw.githubusercontent.com/jonbcard/scrabble-bot/master/src/dictionary.txt

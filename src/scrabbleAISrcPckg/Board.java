@@ -1,6 +1,8 @@
 package scrabbleAISrcPckg;
 
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
@@ -11,17 +13,19 @@ class Board extends GridPane {
 
     private static Set<LetterContainer> newlyPopulatedContainers = new HashSet<>();
     private static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
+
     private static char[][] virtualBoard = new char[15][15];
+    private static List<Row> oneDimensionalBoard = new ArrayList<>();
 
-    private static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
-    private static final String DOUBLE_LETTER_SCORE = "Double\n Letter\n Score";
-    private static final String DOUBLE_WORD_SCORE = "Double\n Word\n Score";
-    private static final String TRIPLE_LETTER_SCORE = "Triple\nLetter\nScore";
-    private static final String STAR = "★";
-
+    static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
+    static final String DOUBLE_LETTER_SCORE = "Double\n Letter\n Score";
+    static final String DOUBLE_WORD_SCORE = "Double\n Word\n Score";
+    static final String TRIPLE_LETTER_SCORE = "Triple\nLetter\nScore";
+    static final String STAR = "★";
 
     Board() {
         buildVirtualBoard();
+        buildOneDimensionalCopyOfBoard();
         for (int row = 0; row < 15; row++) {
             for (int col = 0; col < 15; col++) {
                 LetterContainer square;
@@ -110,7 +114,7 @@ class Board extends GridPane {
             for (int row = 0; row < 15; row++) {
                 System.out.print("|    ");
                 for (int col = 0; col < 15; col++) {
-                    System.out.print(virtualBoard[row][col] + "    |    ");
+                    System.out.print(virtualBoard[col][row] + "    |    ");
                 }
                 System.out.println();
                 System.out.println("-------------------------------------------------------------------------------" +
@@ -119,44 +123,48 @@ class Board extends GridPane {
         }
     }
 
-    private static int getMoveScore(List<Word> words , Player player) {
-        int moveScore = 0;
-        for (Word word : words) {
-            moveScore = getWordScore(word);
+    private static void buildOneDimensionalCopyOfBoard() {
+        // copy references to the 15 rows in the virtual board
+        for (int i = 0; i < 15; i++) {
+            char[] elements = new char[15];
+            System.arraycopy(virtualBoard[i], 0, elements, 0, 15);
+            Row row = new Row(elements, false);
+            oneDimensionalBoard.add(row);
         }
-        moveScore += player.getLetterRack().isEmpty() ? 0 : 50;
-        return moveScore;
-    }
-
-    private static int getWordScore(Word word) {
-        int wordScore = 0;
-        int numTripleWordBonuses = 0;
-        int numDoubleWordBonuses = 0;
-        int i = 0;
-        LetterContainer[] containers = word.getContainersOfWord();
-        for (char c : word.getWordAsString().toCharArray()) {
-            LetterContainer container = containers[i];
-            int letterScore = LetterBag.letterScoreMappings.get(c);
-            switch (container.getBonusText()) {
-                case DOUBLE_WORD_SCORE:
-                case STAR:
-                    numDoubleWordBonuses++;
-                    break;
-                case TRIPLE_LETTER_SCORE:
-                    letterScore = letterScore * 3;
-                    break;
-                case DOUBLE_LETTER_SCORE:
-                    letterScore = letterScore * 2;
-                    break;
-                case TRIPLE_WORD_SCORE:
-                    numTripleWordBonuses++;
-                    break;
+        // copy references to the 15 columns of the virtual board
+        for (int i = 0; i < 15; i++) {
+            char[] elements = new char[15];
+            for (int k = 0; k < 15; k++) {
+                elements[k] = virtualBoard[k][i];
             }
-            wordScore += letterScore;
-            i++;
+            Row row = new Row(elements, true);
+            oneDimensionalBoard.add(row);
         }
-        wordScore = wordScore * 2 * numDoubleWordBonuses * 3 * numTripleWordBonuses;
-        return wordScore;
     }
 
+    private static char[][] transposeBoard(char [][] board){
+        char[][] transposed = new char[board[0].length][board.length];
+        for (int i = 0; i < board.length; i++)
+            for (int j = 0; j < board[0].length; j++)
+                transposed[j][i] = board[i][j];
+        return transposed;
+    }
+
+    static char[][] getVirtualBoard() {
+        return virtualBoard;
+    }
+
+    static List<Row> getOneDimensionalBoard() {
+        return oneDimensionalBoard;
+    }
+
+    LetterContainer getRefToSquareByRowColumn(int col, int row) {
+        ObservableList<Node> children = getChildren();
+        for (Node n : children) {
+            if (getColumnIndex(n) == col && getRowIndex(n) == row) {
+                return (LetterContainer) n;
+            }
+        }
+        return null;
+    }
 }
