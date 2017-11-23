@@ -1,7 +1,5 @@
 package scrabbleAISrcPckg;
 
-import com.sun.prism.paint.Color;
-
 import java.util.*;
 
 import static scrabbleAISrcPckg.Board.*;
@@ -18,7 +16,7 @@ public class GameManager {
         this.board = board;
         buildAlphabetSet(ALPHABET);
     }
-    
+
     private static void buildAlphabetSet(final Set<Character> characters) {
         characters.add('a');
         characters.add('b');
@@ -124,21 +122,21 @@ public class GameManager {
             Set<LetterContainer> emptyAdjacentSquares = getEmptyAdjacentSquares(letterOfWord);
             for (LetterContainer emptyAdjacentSquare : emptyAdjacentSquares) {
                 playableCharsForEachAdjacentSquare.put(emptyAdjacentSquare, restrictPossibleCharacters(emptyAdjacentSquare));
-                System.out.println(emptyAdjacentSquare.getLocation().getRow()+","+emptyAdjacentSquare.getLocation().getCol()+": ");
-                printRestrictedSet(emptyAdjacentSquare);
-                System.out.println("------------------------------------------------------------------");
+//                System.out.println(emptyAdjacentSquare.getLocation().getRow() + "," + emptyAdjacentSquare.getLocation().getCol() + ": ");
+//                printRestrictedSet(emptyAdjacentSquare);
+//                System.out.println("\n------------------------------------------------------------------");
             }
         }
 
         return playableCharsForEachAdjacentSquare;
     }
 
-    private void printRestrictedSet(LetterContainer lc) {
-        Set<Character> chars = playableCharsForEachAdjacentSquare.get(lc);
-        for (Character c : chars) {
-            System.out.print(c+"|");
-        }
-    }
+//    private void printRestrictedSet(LetterContainer lc) {
+//        Set<Character> chars = playableCharsForEachAdjacentSquare.get(lc);
+//        for (Character c : chars) {
+//            System.out.print(c + "|");
+//        }
+//    }
 
     private Set<Character> restrictPossibleCharacters(LetterContainer emptySquare) {
         LetterContainer.Location currentLocation = emptySquare.getLocation();
@@ -146,27 +144,26 @@ public class GameManager {
         buildAlphabetSet(restrictedSet);
         String wordAbove = getWordAbove(currentLocation);
         String wordBelow = getWordBelow(currentLocation);
+        String wordRight = getWordRight(currentLocation);
+        String wordLeft = getWordLeft(currentLocation);
 
-        if (wordAbove != null && !wordAbove.equals("")) {
-            restrictedSet = restrictByWordAbove(wordAbove, restrictedSet);
-        }
-        if (wordBelow != null && !wordBelow.equals("")) {
-            restrictedSet = restrictByWordBelow(wordBelow, restrictedSet);
-        }
-        
+        restrictedSet = restrictBySurroundingWords(wordAbove, wordBelow, restrictedSet);
+        restrictedSet = restrictBySurroundingWords(wordLeft, wordRight, restrictedSet);
+
         return restrictedSet;
     }
 
     private String getWordAbove(LetterContainer.Location location) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         if (location.getRow() != 0) {
             int offset = -1;
             char letterAbove = getLetterInColByOffSet(location, offset);
             if (letterAbove != ' ') {
                 sb.append(letterAbove);
-            }
-            while (getLetterInColByOffSet(location, --offset) != ' ') {
-                sb.append(getLetterInColByOffSet(location, offset));
+                while (offset > (-1 * location.getRow())
+                        && getLetterInColByOffSet(location, --offset) != ' ') {
+                    sb.append(getLetterInColByOffSet(location, offset));
+                }
             }
             return sb.toString();
         }
@@ -174,44 +171,78 @@ public class GameManager {
     }
 
     private String getWordBelow(LetterContainer.Location location) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         if (location.getRow() != 14) {
             int offset = 1;
             char letterBelow = getLetterInColByOffSet(location, offset);
             if (letterBelow != ' ') {
                 sb.append(letterBelow);
+                while (offset < (14 - location.getRow()) && getLetterInColByOffSet(location, ++offset) != ' ') {
+                    sb.append(getLetterInColByOffSet(location, offset));
+                }
+                return sb.toString();
             }
-            while (getLetterInColByOffSet(location, ++offset) != ' ') {
-                sb.append(getLetterInColByOffSet(location, offset));
+        }
+        return null;
+    }
+
+    private String getWordRight(LetterContainer.Location location) {
+        final StringBuilder sb = new StringBuilder();
+        if (location.getCol() != 14) {
+            int offset = 1;
+            char letterRight = getLetterInRowByOffSet(location, offset);
+            if (letterRight != ' ') {
+                sb.append(letterRight);
+                while (offset < (14 - location.getCol()) && getLetterInRowByOffSet(location, ++offset) != ' ') {
+                    sb.append(getLetterInRowByOffSet(location, offset));
+                }
+                return sb.toString();
             }
-            return sb.toString();
+        }
+        return null;
+    }
+
+    private String getWordLeft(LetterContainer.Location location) {
+        final StringBuilder sb = new StringBuilder();
+        if (location.getCol() != 0) {
+            int offset = -1;
+            char letterLeft = getLetterInRowByOffSet(location, offset);
+            if (letterLeft != ' ') {
+                sb.append(letterLeft);
+                while (offset > (-1 * location.getCol()) && getLetterInRowByOffSet(location, --offset) != ' ') {
+                    sb.append(getLetterInRowByOffSet(location, offset));
+                }
+                return sb.toString();
+            }
         }
         return null;
     }
 
     private Character getLetterInColByOffSet(LetterContainer.Location location, int offset) {
-       return board.getVirtualBoard()[location.getRow() + offset][location.getCol()];
+        return board.getVirtualBoard()[location.getRow() + offset][location.getCol()];
     }
 
-    private static Set<Character> restrictByWordAbove(String wordAbove, Set<Character> restrictedSet) {
+    private Character getLetterInRowByOffSet(LetterContainer.Location location, int offset) {
+        return board.getVirtualBoard()[location.getRow()][location.getCol() + offset];
+    }
+
+    // words before are to the left or above, words after are under or to the left
+    private static Set<Character> restrictBySurroundingWords(String wordBefore, String wordAfter, Set<Character> restrictedSet) {
+        if (wordBefore == null) {
+            wordBefore = "";
+        }
+        if (wordAfter == null) {
+            wordAfter = "";
+        }
         for (Character c : ALPHABET) {
-            if (!wordChecker.startsWith(wordAbove + c.toString())) {
+            if (!wordChecker.startsWith(wordBefore + c.toString() + wordAfter)) {
                 restrictedSet.remove(c);
             }
         }
         return restrictedSet;
     }
 
-    private static Set<Character> restrictByWordBelow(String wordBelow, Set<Character> restrictedSet) {
-        for (Character c : ALPHABET) {
-            if (!wordChecker.startsWith(c.toString() + wordBelow)) {
-                restrictedSet.remove(c);
-            }
-        }
-        return restrictedSet;
-    }
-
-   private static void removeNewlyPopulatedFromFringeSet(LetterContainer letterContainer) {
+    private static void removeNewlyPopulatedFromFringeSet(LetterContainer letterContainer) {
         playableCharsForEachAdjacentSquare.remove(letterContainer);
     }
 

@@ -89,7 +89,7 @@ class Board extends GridPane {
             for (int row = 0; row < 15; row++) {
                 System.out.print("|    ");
                 for (int col = 0; col < 15; col++) {
-                    System.out.print(virtualBoard[col][row] + "    |    ");
+                    System.out.print(virtualBoard[row][col] + "    |    ");
                 }
                 System.out.println();
                 System.out.println("-------------------------------------------------------------------------------" +
@@ -133,7 +133,7 @@ class Board extends GridPane {
         return oneDimensionalBoard;
     }
 
-    LetterContainer getRefToSquareByRowColumn(int col, int row) {
+    LetterContainer getRefToSquareByRowColumn(int row, int col) {
         ObservableList<Node> children = getChildren();
         for (Node n : children) {
             if (getColumnIndex(n) == col && getRowIndex(n) == row) {

@@ -103,7 +103,7 @@ class LetterContainer extends StackPane {
         if (this.getParent() instanceof Board) {
             GameManager.addLetterToRowColOnBoard(character.charAt(0), this);
         }
-        Board.printBoard();
+        //Board.printBoard();
     }
 
     void removeLetter() {
@@ -116,7 +116,7 @@ class LetterContainer extends StackPane {
         if (this.getParent() instanceof Board) {
             GameManager.clearSpaceOnBoard(this);
         }
-        Board.printBoard();
+        //Board.printBoard();
     }
 
     String getText() {
