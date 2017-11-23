@@ -19,8 +19,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // FXMLLoader.load(getClass().getResource("sample.fxml"));
-        WordChecker wordChecker = new WordChecker();
-        buildDictionaryTrie(wordChecker);
+        buildDictionaryTrie(GameManager.wordChecker);
         ScrollPane root = new ScrollPane(); // highest level container
         root.setPrefSize(1200, 800);
         HBox horizontalOutermostContainer = new HBox(); // holds board, and sideBar

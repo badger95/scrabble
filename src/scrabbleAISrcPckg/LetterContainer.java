@@ -23,7 +23,7 @@ class LetterContainer extends StackPane {
 
 
     LetterContainer(String displaySting, Paint originalColor, final int row, final int col, GridPane parent) {
-        location = new Location(col, row, parent);
+        location = new Location(row, col, parent);
         text = new Text(displaySting);
         bonusText = displaySting;
         rectangle = new Rectangle();

@@ -1,5 +1,7 @@
 package scrabbleAISrcPckg;
 
+import com.sun.prism.paint.Color;
+
 import java.util.*;
 
 import static scrabbleAISrcPckg.Board.*;
@@ -9,7 +11,7 @@ public class GameManager {
     static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
     private final Board board;
     private static final Set<Character> ALPHABET = new HashSet<>();
-    private static WordChecker wordChecker = new WordChecker();
+    static WordChecker wordChecker = new WordChecker();
     private static Map<LetterContainer, Set<Character>> playableCharsForEachAdjacentSquare = new HashMap<>();
 
     GameManager(Board board) {
@@ -122,10 +124,20 @@ public class GameManager {
             Set<LetterContainer> emptyAdjacentSquares = getEmptyAdjacentSquares(letterOfWord);
             for (LetterContainer emptyAdjacentSquare : emptyAdjacentSquares) {
                 playableCharsForEachAdjacentSquare.put(emptyAdjacentSquare, restrictPossibleCharacters(emptyAdjacentSquare));
+                System.out.println(emptyAdjacentSquare.getLocation().getRow()+","+emptyAdjacentSquare.getLocation().getCol()+": ");
+                printRestrictedSet(emptyAdjacentSquare);
+                System.out.println("------------------------------------------------------------------");
             }
         }
 
         return playableCharsForEachAdjacentSquare;
+    }
+
+    private void printRestrictedSet(LetterContainer lc) {
+        Set<Character> chars = playableCharsForEachAdjacentSquare.get(lc);
+        for (Character c : chars) {
+            System.out.print(c+"|");
+        }
     }
 
     private Set<Character> restrictPossibleCharacters(LetterContainer emptySquare) {
@@ -153,7 +165,7 @@ public class GameManager {
             if (letterAbove != ' ') {
                 sb.append(letterAbove);
             }
-            while (getLetterInColByOffSet(location, offset--) != ' ') {
+            while (getLetterInColByOffSet(location, --offset) != ' ') {
                 sb.append(getLetterInColByOffSet(location, offset));
             }
             return sb.toString();
@@ -165,11 +177,11 @@ public class GameManager {
         StringBuilder sb = new StringBuilder();
         if (location.getRow() != 14) {
             int offset = 1;
-            char letterAbove = getLetterInColByOffSet(location, offset);
-            if (letterAbove != ' ') {
-                sb.append(letterAbove);
+            char letterBelow = getLetterInColByOffSet(location, offset);
+            if (letterBelow != ' ') {
+                sb.append(letterBelow);
             }
-            while (getLetterInColByOffSet(location, offset++) != ' ') {
+            while (getLetterInColByOffSet(location, ++offset) != ' ') {
                 sb.append(getLetterInColByOffSet(location, offset));
             }
             return sb.toString();
@@ -183,16 +195,18 @@ public class GameManager {
 
     private static Set<Character> restrictByWordAbove(String wordAbove, Set<Character> restrictedSet) {
         for (Character c : ALPHABET) {
-            wordChecker.startsWith(wordAbove + c.toString());
-            restrictedSet.add(c);
+            if (!wordChecker.startsWith(wordAbove + c.toString())) {
+                restrictedSet.remove(c);
+            }
         }
         return restrictedSet;
     }
 
     private static Set<Character> restrictByWordBelow(String wordBelow, Set<Character> restrictedSet) {
         for (Character c : ALPHABET) {
-            wordChecker.startsWith(c.toString() + wordBelow);
-            restrictedSet.add(c);
+            if (!wordChecker.startsWith(c.toString() + wordBelow)) {
+                restrictedSet.remove(c);
+            }
         }
         return restrictedSet;
     }
