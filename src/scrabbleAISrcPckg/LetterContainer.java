@@ -16,7 +16,7 @@ class LetterContainer extends StackPane {
 
     private Text text; // what actually gets displayed
     private Rectangle rectangle;
-    private boolean containsLetter = false;
+    boolean containsLetter = false;
     private Paint originalColor;
     private String bonusText = ""; // denotes bonus text or star
     private Location location;
@@ -101,7 +101,7 @@ class LetterContainer extends StackPane {
         setStyle("-fx-font: 12 arial;");
         containsLetter = true;
         if (this.getParent() instanceof Board) {
-            Board.addLetterToRowColOnBoard(character.charAt(0), this);
+            GameManager.addLetterToRowColOnBoard(character.charAt(0), this);
         }
         Board.printBoard();
     }
@@ -114,7 +114,7 @@ class LetterContainer extends StackPane {
             setStyle("-fx-font: 40 arial;");
         }
         if (this.getParent() instanceof Board) {
-            Board.clearSpaceOnBoard(this);
+            GameManager.clearSpaceOnBoard(this);
         }
         Board.printBoard();
     }

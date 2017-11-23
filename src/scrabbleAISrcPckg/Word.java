@@ -19,6 +19,10 @@ class Word {
         word = sb.toString();
     }
 
+    Word(LetterContainer letter) {
+        word = letter.getText();
+    }
+
     LetterContainer[] getContainersOfWord() {
         return containersOfWord;
     }

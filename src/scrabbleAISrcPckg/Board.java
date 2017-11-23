@@ -11,10 +11,9 @@ import java.util.*;
 
 class Board extends GridPane {
 
-    private static Set<LetterContainer> newlyPopulatedContainers = new HashSet<>();
-    private static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
+    static Set<LetterContainer> newlyPopulatedContainers = new HashSet<>();
 
-    private static char[][] virtualBoard = new char[15][15];
+    static char[][] virtualBoard = new char[15][15];
     private static List<Row> oneDimensionalBoard = new ArrayList<>();
 
     static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
@@ -83,32 +82,8 @@ class Board extends GridPane {
         }
     }
 
-    static void addLetterToRowColOnBoard(char c, LetterContainer letterContainer) {
-        newlyPopulatedContainers.add(letterContainer);
-        containersWithCommittedLetters.put(letterContainer, true);
-        int row = letterContainer.getLocation().getRow();
-        int col = letterContainer.getLocation().getCol();
-        if (virtualBoard[row][col] == ' ') {
-            virtualBoard[row][col] = c;
-        }
-    }
-
-    static void clearSpaceOnBoard(LetterContainer letterContainer) {
-        int col = letterContainer.getLocation().getCol();
-        int row = letterContainer.getLocation().getRow();
-        virtualBoard[row][col] = ' ';
-        newlyPopulatedContainers.remove(letterContainer);
-    }
-
-    static void commitAllNewlyPopulatedContainers() {
-        for (LetterContainer letterContainer : newlyPopulatedContainers) {
-            containersWithCommittedLetters.put(letterContainer, true);
-            letterContainer.setDisable(true);
-        }
-    }
-
     static void printBoard() {
-        if (!containersWithCommittedLetters.isEmpty()) {
+        if (!GameManager.containersWithCommittedLetters.isEmpty()) {
             System.out.println("-------------------------------------------------------------------------------" +
                     "------------------------------------------------------------------------");
             for (int row = 0; row < 15; row++) {
@@ -150,7 +125,7 @@ class Board extends GridPane {
         return transposed;
     }
 
-    static char[][] getVirtualBoard() {
+    char[][] getVirtualBoard() {
         return virtualBoard;
     }
 
@@ -166,5 +141,9 @@ class Board extends GridPane {
             }
         }
         return null;
+    }
+
+    Word getPlayedWord() {
+        return new Word(new ArrayList<>(newlyPopulatedContainers));
     }
 }

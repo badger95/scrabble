@@ -53,6 +53,9 @@ public class Main extends Application {
         Label whoseTurn = new Label(mutex.getWhoseTurnLabel());
         endTurnButton.setOnMouseClicked(event -> {
             humanPlayer.fillLetterRack();
+            GameManager.commitAllNewlyPopulatedContainers();
+            Word playedWord = board.getPlayedWord();
+            gameManager.updatePlayableCharsForSquaresAroundWord(playedWord);
             mutex.switchTurns();
             whoseTurn.setText(mutex.getWhoseTurnLabel());
         });

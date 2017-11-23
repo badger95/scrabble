@@ -1,17 +1,49 @@
 package scrabbleAISrcPckg;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static scrabbleAISrcPckg.Board.*;
 
 public class GameManager {
 
-    private final Board board; //reference to board
+    static Map<LetterContainer, Boolean> containersWithCommittedLetters = new HashMap<>();
+    private final Board board;
+    private static final Set<Character> ALPHABET = new HashSet<>();
+    private static WordChecker wordChecker = new WordChecker();
+    private static Map<LetterContainer, Set<Character>> playableCharsForEachAdjacentSquare = new HashMap<>();
 
     GameManager(Board board) {
         this.board = board;
+        buildAlphabetSet(ALPHABET);
+    }
+    
+    private static void buildAlphabetSet(final Set<Character> characters) {
+        characters.add('a');
+        characters.add('b');
+        characters.add('c');
+        characters.add('d');
+        characters.add('e');
+        characters.add('f');
+        characters.add('g');
+        characters.add('h');
+        characters.add('i');
+        characters.add('j');
+        characters.add('k');
+        characters.add('l');
+        characters.add('m');
+        characters.add('n');
+        characters.add('o');
+        characters.add('p');
+        characters.add('q');
+        characters.add('r');
+        characters.add('s');
+        characters.add('t');
+        characters.add('u');
+        characters.add('v');
+        characters.add('w');
+        characters.add('x');
+        characters.add('y');
+        characters.add('z');
     }
 
     private static int getMoveScore(List<Word> words, Player player) {
@@ -54,95 +86,143 @@ public class GameManager {
         return wordScore;
     }
 
-    // Naively search all four squares adjacent to each newly committed tile for empty neighbor
-    Set<LetterContainer> findEmptyAdjacentSquares(Word newlyPlacedWord) {
-        LetterContainer[] letterContainersOfWord = newlyPlacedWord.getContainersOfWord();
-        Set<LetterContainer> emptyAdjacentSquares = new HashSet<>();
-        for (LetterContainer letterContainer : letterContainersOfWord) {
-            int row = letterContainer.getLocation().getRow();
-            int col = letterContainer.getLocation().getCol();
-            int oneRowDown = row < 14 ? row + 1 : -1;
-            int oneRowUp = row > 0 ? row - 1 : -1;
-            int oneColRight = col < 14 ? col + 1 : -1;
-            int oneColLeft = col > 0 ? col - 1 : -1;
-            // clockwise check here ^ -> down <-
-            if (oneRowUp != -1 && checkSquareIsEmpty(oneRowUp, col)) {
-                LetterContainer emptyLC = board.getRefToSquareByRowColumn(oneRowUp, col);
-                emptyAdjacentSquares.add(emptyLC);
-            }
-            if (oneColRight != -1 && checkSquareIsEmpty(row, oneColRight)) {
-                LetterContainer emptyLC = board.getRefToSquareByRowColumn(row, oneColRight);
-                emptyAdjacentSquares.add(emptyLC);
-            }
-            if (oneRowDown != -1 && checkSquareIsEmpty(oneRowDown, col)) {
-                LetterContainer emptyLC = board.getRefToSquareByRowColumn(oneRowDown, col);
-                emptyAdjacentSquares.add(emptyLC);
-            }
-            if (oneColLeft != -1 && checkSquareIsEmpty(row, oneColLeft)) {
-                LetterContainer emptyLC = board.getRefToSquareByRowColumn(row, oneColLeft);
-                emptyAdjacentSquares.add(emptyLC);
+    // Naively search all four squares adjacent to each newly committed tile for its neighbors, ignores diagonals
+    private Set<LetterContainer> getEmptyAdjacentSquares(LetterContainer letterContainer) {
+        Set<LetterContainer> adjacentSquares = new HashSet<>();
+        int row = letterContainer.getLocation().getRow();
+        int col = letterContainer.getLocation().getCol();
+        int oneRowDown = row < 14 ? row + 1 : -1;
+        int oneRowUp = row > 0 ? row - 1 : -1;
+        int oneColRight = col < 14 ? col + 1 : -1;
+        int oneColLeft = col > 0 ? col - 1 : -1;
+        // clockwise bounds check:
+        // ^
+        if (oneRowUp != -1 && !board.getRefToSquareByRowColumn(oneRowUp, col).containsLetter) {
+            adjacentSquares.add(board.getRefToSquareByRowColumn(oneRowUp, col));
+        }
+        // ->
+        if (oneColRight != -1 && !board.getRefToSquareByRowColumn(row, oneColRight).containsLetter) {
+            adjacentSquares.add(board.getRefToSquareByRowColumn(row, oneColRight));
+        }
+        // down
+        if (oneRowDown != -1 && !board.getRefToSquareByRowColumn(oneRowDown, col).containsLetter) {
+            adjacentSquares.add(board.getRefToSquareByRowColumn(oneRowDown, col));
+        }
+        // <-
+        if (oneColLeft != -1 && !board.getRefToSquareByRowColumn(row, oneColLeft).containsLetter) {
+            adjacentSquares.add(board.getRefToSquareByRowColumn(row, oneColLeft));
+        }
+
+        return adjacentSquares;
+    }
+
+    Map<LetterContainer, Set<Character>> updatePlayableCharsForSquaresAroundWord(Word word) {
+        LetterContainer[] containersOfWord = word.getContainersOfWord();
+        for (LetterContainer letterOfWord : containersOfWord) {
+            Set<LetterContainer> emptyAdjacentSquares = getEmptyAdjacentSquares(letterOfWord);
+            for (LetterContainer emptyAdjacentSquare : emptyAdjacentSquares) {
+                playableCharsForEachAdjacentSquare.put(emptyAdjacentSquare, restrictPossibleCharacters(emptyAdjacentSquare));
             }
         }
 
-        return emptyAdjacentSquares;
+        return playableCharsForEachAdjacentSquare;
     }
 
-    // Naively search all four squares adjacent to each newly committed tile for nonempty neighbors
-    Set<LetterContainer> findNonemptyAdjacentSquares(Word newlyPlacedWord) {
-        LetterContainer[] letterContainersOfWord = newlyPlacedWord.getContainersOfWord();
-        Set<LetterContainer> nonemptyAdjacentSquares = new HashSet<>();
-        for (LetterContainer letterContainer : letterContainersOfWord) {
-            int row = letterContainer.getLocation().getRow();
-            int col = letterContainer.getLocation().getCol();
-            int oneRowDown = row < 14 ? row + 1 : -1;
-            int oneRowUp = row > 0 ? row - 1 : -1;
-            int oneColRight = col < 14 ? col + 1 : -1;
-            int oneColLeft = col > 0 ? col - 1 : -1;
-            // clockwise check here ^ -> down <-
-            if (oneRowUp != -1 && !checkSquareIsEmpty(oneRowUp, col)) {
-                LetterContainer nonemptyLC = board.getRefToSquareByRowColumn(oneRowUp, col);
-                nonemptyAdjacentSquares.add(nonemptyLC);
-            }
-            if (oneColRight != -1 && !checkSquareIsEmpty(row, oneColRight)) {
-                LetterContainer nonemptyLC = board.getRefToSquareByRowColumn(row, oneColRight);
-                nonemptyAdjacentSquares.add(nonemptyLC);
-            }
-            if (oneRowDown != -1 && !checkSquareIsEmpty(oneRowDown, col)) {
-                LetterContainer nonemptyLC = board.getRefToSquareByRowColumn(oneRowDown, col);
-                nonemptyAdjacentSquares.add(nonemptyLC);
-            }
-            if (oneColLeft != -1 && !checkSquareIsEmpty(row, oneColLeft)) {
-                LetterContainer nonemptyLC = board.getRefToSquareByRowColumn(row, oneColLeft);
-                nonemptyAdjacentSquares.add(nonemptyLC);
-            }
+    private Set<Character> restrictPossibleCharacters(LetterContainer emptySquare) {
+        LetterContainer.Location currentLocation = emptySquare.getLocation();
+        Set<Character> restrictedSet = new HashSet<>();
+        buildAlphabetSet(restrictedSet);
+        String wordAbove = getWordAbove(currentLocation);
+        String wordBelow = getWordBelow(currentLocation);
+
+        if (wordAbove != null && !wordAbove.equals("")) {
+            restrictedSet = restrictByWordAbove(wordAbove, restrictedSet);
         }
-
-        return nonemptyAdjacentSquares;
+        if (wordBelow != null && !wordBelow.equals("")) {
+            restrictedSet = restrictByWordBelow(wordBelow, restrictedSet);
+        }
+        
+        return restrictedSet;
     }
 
-    private boolean checkSquareIsEmpty(int row, int col) {
-        return getVirtualBoard()[row][col] == ' ';
+    private String getWordAbove(LetterContainer.Location location) {
+        StringBuilder sb = new StringBuilder();
+        if (location.getRow() != 0) {
+            int offset = -1;
+            char letterAbove = getLetterInColByOffSet(location, offset);
+            if (letterAbove != ' ') {
+                sb.append(letterAbove);
+            }
+            while (getLetterInColByOffSet(location, offset--) != ' ') {
+                sb.append(getLetterInColByOffSet(location, offset));
+            }
+            return sb.toString();
+        }
+        return null;
     }
 
-//    Map<LetterContainer, Set<Character>> updatePlaybleCharsForCrossCheckedSqaures(Word word) {
-//        Set<LetterContainer> letterContainers = findEmptyAdjacentSquares(word);
-//        for (LetterContainer letterContainer : letterContainers) {
-//
-//        }
-//    }
+    private String getWordBelow(LetterContainer.Location location) {
+        StringBuilder sb = new StringBuilder();
+        if (location.getRow() != 14) {
+            int offset = 1;
+            char letterAbove = getLetterInColByOffSet(location, offset);
+            if (letterAbove != ' ') {
+                sb.append(letterAbove);
+            }
+            while (getLetterInColByOffSet(location, offset++) != ' ') {
+                sb.append(getLetterInColByOffSet(location, offset));
+            }
+            return sb.toString();
+        }
+        return null;
+    }
 
+    private Character getLetterInColByOffSet(LetterContainer.Location location, int offset) {
+       return board.getVirtualBoard()[location.getRow() + offset][location.getCol()];
+    }
 
-//    static boolean validateBoard() {
-//        for (Row row : Board.getOneDimensionalBoard()) {
-//            if (!validateRow(Row row)) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
-//
-//    private static boolean validateRow(Row row) {
-//
-//    }
+    private static Set<Character> restrictByWordAbove(String wordAbove, Set<Character> restrictedSet) {
+        for (Character c : ALPHABET) {
+            wordChecker.startsWith(wordAbove + c.toString());
+            restrictedSet.add(c);
+        }
+        return restrictedSet;
+    }
+
+    private static Set<Character> restrictByWordBelow(String wordBelow, Set<Character> restrictedSet) {
+        for (Character c : ALPHABET) {
+            wordChecker.startsWith(c.toString() + wordBelow);
+            restrictedSet.add(c);
+        }
+        return restrictedSet;
+    }
+
+   private static void removeNewlyPopulatedFromFringeSet(LetterContainer letterContainer) {
+        playableCharsForEachAdjacentSquare.remove(letterContainer);
+    }
+
+    static void addLetterToRowColOnBoard(char c, LetterContainer letterContainer) {
+        newlyPopulatedContainers.add(letterContainer);
+        GameManager.containersWithCommittedLetters.put(letterContainer, true);
+        int row = letterContainer.getLocation().getRow();
+        int col = letterContainer.getLocation().getCol();
+        if (virtualBoard[row][col] == ' ') {
+            virtualBoard[row][col] = c;
+        }
+    }
+
+    static void clearSpaceOnBoard(LetterContainer letterContainer) {
+        int col = letterContainer.getLocation().getCol();
+        int row = letterContainer.getLocation().getRow();
+        virtualBoard[row][col] = ' ';
+        newlyPopulatedContainers.remove(letterContainer);
+    }
+
+    static void commitAllNewlyPopulatedContainers() {
+        for (LetterContainer letterContainer : newlyPopulatedContainers) {
+            GameManager.containersWithCommittedLetters.put(letterContainer, true);
+            letterContainer.setDisable(true);
+            removeNewlyPopulatedFromFringeSet(letterContainer);
+        }
+    }
 }
