@@ -270,4 +270,90 @@ public class GameManager {
             removeNewlyPopulatedFromFringeSet(letterContainer);
         }
     }
+
+    void doBestPossibleMove(Player player) {
+        int highestScore = 0;
+        Set<LetterContainer> potentialAnchors = findPotentialAnchors();
+        for (LetterContainer anchor : potentialAnchors) {
+            Set<LetterContainer> lcsOfWordSoFar = new HashSet<>();
+            getLeftPart(anchor, "", wordChecker.getRoot(), getNumNonAnchorsInRowToLeft(anchor), player, lcsOfWordSoFar);
+        }
+    }
+
+    private int getNumNonAnchorsInRowToLeft(LetterContainer anchor) {
+        LetterContainer.Location location = anchor.getLocation();
+        int row = location.getRow();
+        int col = location.getCol();
+        int numNonAnchors = 0;
+        Set<LetterContainer> anchors = findPotentialAnchors();
+        for (int i = 0; i < (-14 + col); i++) {
+            if (!anchors.contains(board.getRefToSquareByRowColumn(row, col - i))
+                    && board.getRefToSquareByRowColumn(row, col - i).getText().length() != 1) {
+                numNonAnchors++;
+            }
+        }
+
+        return numNonAnchors;
+    }
+
+    private Set<LetterContainer> findPotentialAnchors() {
+        return playableCharsForEachAdjacentSquare.keySet();
+    }
+
+    private void getLeftPart(LetterContainer anchor, String wordSoFar, WordChecker.TrieNode currentNode, int limit,
+                             Player player, Set<LetterContainer> lcsOfWordSoFar) {
+        extendRight(wordSoFar, currentNode, anchor, player, lcsOfWordSoFar);
+        if (limit > 0) {
+            for (WordChecker.TrieNode child : currentNode.children) {
+                if (player.letterRackContainsLetter(child.toString())) {
+                    LetterContainer removedLettersContainer = player.removeLetterFromRack(child.toString());
+                    lcsOfWordSoFar.add(removedLettersContainer);
+                    getLeftPart(anchor, wordSoFar + child.toString(), child, limit - 1, player, lcsOfWordSoFar);
+                    // put letter back
+                    player.putLetterInRack(child.toString(), removedLettersContainer);
+                    lcsOfWordSoFar.remove(removedLettersContainer);
+                }
+            }
+        }
+    }
+
+    private void extendRight(String wordSoFar, WordChecker.TrieNode node, LetterContainer currentSquare, Player player, Set<LetterContainer> lcsOfWordSoFar) {
+        if (currentSquare.getText().equals("")) {
+            if (node.endOfWord) {
+                Word newWord = new Word(lcsOfWordSoFar);
+                player.addPlayableMove(newWord, getWordScore(newWord));
+            }
+            for (WordChecker.TrieNode child : node.children) {
+                if (player.letterRackContainsLetter(node.toString())) {
+                    Set<Character> playables = playableCharsForEachAdjacentSquare.get(currentSquare);
+                    if (playables != null && playables.contains(node.toString().charAt(0))) {
+                        // save a reference to original location to replace it if necessary
+                        LetterContainer removedLettersContainer = player.removeLetterFromRack(node.toString());
+                        lcsOfWordSoFar.add(removedLettersContainer);
+                        LetterContainer nextSquare = board.getRefToSquareByRowColumn(currentSquare.getLocation().getRow() + 1,
+                                currentSquare.getLocation().getCol());
+                        if (nextSquare == null) {
+                            break;
+                        }
+                        extendRight(wordSoFar + node.toString(), child, nextSquare, player, lcsOfWordSoFar);
+                        player.putLetterInRack(node.toString(), removedLettersContainer);
+                        lcsOfWordSoFar.remove(removedLettersContainer);
+                    }
+                }
+            }
+        } else {
+            String letter = currentSquare.getText();
+            for (WordChecker.TrieNode child : node.children) {
+                if (child.toString().equals(letter)) {
+                    LetterContainer nextSquare = board.getRefToSquareByRowColumn(currentSquare.getLocation().getRow() + 1,
+                            currentSquare.getLocation().getCol());
+                    if (nextSquare == null) {
+                        break;
+                    }
+                    extendRight(wordSoFar + letter, child, nextSquare, player, lcsOfWordSoFar);
+                }
+            }
+        }
+    }
+
 }

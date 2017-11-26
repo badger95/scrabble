@@ -1,17 +1,33 @@
 package scrabbleAISrcPckg;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 abstract class Player {
 
     private int score;
 
     private LetterRack letterRack;
+    private Set<String> lettersInRack;
+    private Map<Word, Integer> playableMoves;
 
     Player() {
         letterRack = new LetterRack();
+        lettersInRack = new HashSet<>();
+        playableMoves = new HashMap<>();
+        for (LetterContainer lc : letterRack.getLetters()) {
+            lettersInRack.add(lc.getText());
+        }
     }
 
     public int getScore() {
         return score;
+    }
+
+    boolean letterRackContainsLetter(String letter) {
+        return lettersInRack.contains(letter);
     }
 
     public void setScore(int score) {
@@ -48,4 +64,24 @@ abstract class Player {
         }
     }
 
+    LetterContainer removeLetterFromRack(String letter) {
+        for (LetterContainer lc : letterRack.getLetters()) {
+            if (lc.getText().equals(letter)) {
+                lc.setText("");
+                lettersInRack.remove(letter);
+                return lc;
+            }
+        }
+
+        return null;
+    }
+
+    void putLetterInRack(String string, LetterContainer lc) {
+        lc.setText(string);
+        lettersInRack.add(string);
+    }
+
+    void addPlayableMove(Word word, int score) {
+        playableMoves.put(word, score);
+    }
 }

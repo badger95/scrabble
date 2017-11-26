@@ -134,6 +134,9 @@ class Board extends GridPane {
     }
 
     LetterContainer getRefToSquareByRowColumn(int row, int col) {
+        if (row > 14 || col > 14 || row < 0 || col < 0) {
+            return null;
+        }
         ObservableList<Node> children = getChildren();
         for (Node n : children) {
             if (getColumnIndex(n) == col && getRowIndex(n) == row) {

@@ -53,7 +53,11 @@ class WordChecker {
         return p != null;
     }
 
-    private class TrieNode {
+    TrieNode getRoot() {
+        return root;
+    }
+
+    class TrieNode {
         TrieNode[] children;
         boolean endOfWord;
 
