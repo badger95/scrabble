@@ -1,16 +1,20 @@
 package scrabbleAISrcPckg;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-class Word {
+class Move {
 
     private LetterContainer[] containersOfWord;
     private String word;
+    private Map<LetterContainer, LetterContainer> moveMapping = new HashMap<>();
 
-    Word(List<LetterContainer> letterContainerList) {
+    Move(List<LetterContainer> letterContainerList, Map<LetterContainer, LetterContainer> moveMapping) {
         containersOfWord = new LetterContainer[letterContainerList.size()];
         StringBuilder sb = new StringBuilder();
+        this.moveMapping = moveMapping;
         int i = 0;
         for (LetterContainer l : letterContainerList) {
             sb.append(l.getText());
@@ -20,9 +24,10 @@ class Word {
         word = sb.toString();
     }
 
-    Word(Set<LetterContainer> letterContainerList) {
+    Move(Set<LetterContainer> letterContainerList, Map<LetterContainer,LetterContainer> moveMapping) {
         containersOfWord = new LetterContainer[letterContainerList.size()];
         StringBuilder sb = new StringBuilder();
+        this.moveMapping = moveMapping;
         int i = 0;
         for (LetterContainer l : letterContainerList) {
             sb.append(l.getText());
@@ -32,7 +37,7 @@ class Word {
         word = sb.toString();
     }
 
-    Word(LetterContainer letter) {
+    Move(LetterContainer letter) {
         word = letter.getText();
     }
 
@@ -42,5 +47,13 @@ class Word {
 
     String getWordAsString() {
         return word;
+    }
+
+    public Map<LetterContainer, LetterContainer> getMoveMapping() {
+        return moveMapping;
+    }
+
+    public void setMoveMapping(Map<LetterContainer, LetterContainer> moveMapping) {
+        this.moveMapping = moveMapping;
     }
 }

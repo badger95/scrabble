@@ -53,10 +53,11 @@ public class Main extends Application {
         endTurnButton.setOnMouseClicked(event -> {
             humanPlayer.fillLetterRack();
             GameManager.commitAllNewlyPopulatedContainers();
-            Word playedWord = board.getPlayedWord();
-            gameManager.updatePlayableCharsForSquaresAroundWord(playedWord);
+            Move playedMove = board.getPlayedWord();
+            gameManager.updatePlayableCharsForSquaresAroundWord(playedMove);
             mutex.switchTurns();
             whoseTurn.setText(mutex.getWhoseTurnLabel());
+            gameManager.doBestPossibleMove(aiPlayer);
         });
         turnBar.getChildren().addAll(endTurnButton, dumpButton, whoseTurn);
         turnBar.setSpacing(10);

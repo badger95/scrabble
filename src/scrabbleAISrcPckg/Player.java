@@ -11,7 +11,7 @@ abstract class Player {
 
     private LetterRack letterRack;
     private Set<String> lettersInRack;
-    private Map<Word, Integer> playableMoves;
+    private Map<Move, Integer> playableMoves;
 
     Player() {
         letterRack = new LetterRack();
@@ -81,7 +81,15 @@ abstract class Player {
         lettersInRack.add(string);
     }
 
-    void addPlayableMove(Word word, int score) {
-        playableMoves.put(word, score);
+    void addPlayableMove(Move move, int score) {
+        playableMoves.put(move, score);
+    }
+
+    Map<Move, Integer> getPlayableMoves() {
+        return playableMoves;
+    }
+
+    void clearPlayableMoves() {
+        playableMoves.clear();
     }
 }
