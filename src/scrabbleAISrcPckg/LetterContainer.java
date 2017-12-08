@@ -15,7 +15,7 @@ import javafx.scene.text.Text;
 class LetterContainer extends StackPane {
 
     private Text text; // what actually gets displayed
-    private Rectangle rectangle;
+    Rectangle rectangle;
     boolean containsLetter = false;
     private Paint originalColor;
     private String bonusText = ""; // denotes bonus text or star
@@ -29,9 +29,9 @@ class LetterContainer extends StackPane {
         rectangle = new Rectangle();
         rectangle.setStroke(Color.CHOCOLATE);
         rectangle.setFill(originalColor);
-        this.originalColor = originalColor;
         rectangle.setHeight(50);
         rectangle.setWidth(50);
+        this.originalColor = originalColor;
         getChildren().addAll(rectangle, text);
 
         setOnDragOver(event -> {
@@ -96,14 +96,13 @@ class LetterContainer extends StackPane {
     }
 
     void addLetter(String character) {
-        text.setText(character);
+        text.setText(character.toUpperCase());
         rectangle.setFill(Color.SADDLEBROWN);
         setStyle("-fx-font: 12 arial;");
         containsLetter = true;
         if (this.getParent() instanceof Board) {
             GameManager.addLetterToRowColOnBoard(character.charAt(0), this);
         }
-        //Board.printBoard();
     }
 
     void removeLetter() {
@@ -116,7 +115,6 @@ class LetterContainer extends StackPane {
         if (this.getParent() instanceof Board) {
             GameManager.clearSpaceOnBoard(this);
         }
-        //Board.printBoard();
     }
 
     String getText() {

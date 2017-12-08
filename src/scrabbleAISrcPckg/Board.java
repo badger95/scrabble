@@ -146,7 +146,4 @@ class Board extends GridPane {
         return null;
     }
 
-    Move getPlayedWord() {
-        return new Move(new ArrayList<>(newlyPopulatedContainers), null);
-    }
 }

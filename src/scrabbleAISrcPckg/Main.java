@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -13,6 +14,7 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Set;
 
 public class Main extends Application {
 
@@ -26,7 +28,7 @@ public class Main extends Application {
         VBox sideBar = new VBox(); // holds tileRacks, player scores, and action buttons
         sideBar.setAlignment(Pos.CENTER_RIGHT);
         primaryStage.setScene(new Scene(root, 1200, 800));
-        LetterBag.getInstance();
+        LetterBag.createInstance();
         Mutex mutex = new Mutex(0, 2);
         AIPlayer aiPlayer = new AIPlayer();
         AITurn aiTurn = new AITurn(mutex, 0, aiPlayer);
@@ -50,14 +52,15 @@ public class Main extends Application {
         });
         Button endTurnButton = new Button("End Turn");
         Label whoseTurn = new Label(mutex.getWhoseTurnLabel());
-        endTurnButton.setOnMouseClicked(event -> {
-            humanPlayer.fillLetterRack();
+        endTurnButton.setOnMouseClicked((MouseEvent event) -> {
             GameManager.commitAllNewlyPopulatedContainers();
-            Move playedMove = board.getPlayedWord();
-            gameManager.updatePlayableCharsForSquaresAroundWord(playedMove);
             mutex.switchTurns();
             whoseTurn.setText(mutex.getWhoseTurnLabel());
-            gameManager.doBestPossibleMove(aiPlayer);
+            Set<LetterContainer> playedMove = gameManager.getPlayedWord();
+            gameManager.updatePlayableCharsForSquaresAroundWord(playedMove);
+
+            gameManager.doBestPossibleMove(humanPlayer);
+            humanPlayer.fillLetterRack();
         });
         turnBar.getChildren().addAll(endTurnButton, dumpButton, whoseTurn);
         turnBar.setSpacing(10);

@@ -10,28 +10,21 @@ abstract class Player {
     private int score;
 
     private LetterRack letterRack;
-    private Set<String> lettersInRack;
     private Map<Move, Integer> playableMoves;
 
     Player() {
         letterRack = new LetterRack();
-        lettersInRack = new HashSet<>();
         playableMoves = new HashMap<>();
-        for (LetterContainer lc : letterRack.getLetters()) {
-            lettersInRack.add(lc.getText());
-        }
-    }
-
-    public int getScore() {
-        return score;
     }
 
     boolean letterRackContainsLetter(String letter) {
-        return lettersInRack.contains(letter);
-    }
+        for (LetterContainer lc : letterRack.getLetters()) {
+            if (lc.getText().equalsIgnoreCase(letter)) {
+                return true;
+            }
+        }
 
-    public void setScore(int score) {
-        this.score = score;
+        return false;
     }
 
     LetterRack getLetterRack() {
@@ -42,13 +35,21 @@ abstract class Player {
         Character[] oldLetters = new Character[7];
         int i = 0;
         for (LetterContainer letterContainer : letterRack.getLetters()) {
-            oldLetters[i] = letterContainer.getText().charAt(0);
-            letterContainer.setText(LetterBag.getRandomFromBagAsString());
-            i++;
+            String letter = letterContainer.getText();
+            if (letter.equals("")) {
+                return; // bag must be empty
+            }
+            oldLetters[i] = letter.charAt(0);
+            String newLetter = LetterBag.getRandomFromBagAsString();
+            if (newLetter != null && !newLetter.equals("")) {
+                letterContainer.setText(newLetter);
+                i++;
+            } else {
+                return;
+            }
         }
 
-        i = 0;
-        for (Character letter : oldLetters) {
+        for (i = 0; i < oldLetters.length; i++) {
             LetterBag.addLetter(oldLetters[i]);
             i++;
         }
@@ -58,17 +59,17 @@ abstract class Player {
         for (LetterContainer letterContainer : letterRack.getLetters()) {
             if (letterContainer.getText().equals("")) {
                 String letter = LetterBag.getRandomFromBagAsString();
-                letterContainer.setText(letter);
-                letterContainer.addLetter(letter);
+                if (letter != null && !letter.equals("")) {
+                    letterContainer.addLetter(letter);
+                }
             }
         }
     }
 
     LetterContainer removeLetterFromRack(String letter) {
         for (LetterContainer lc : letterRack.getLetters()) {
-            if (lc.getText().equals(letter)) {
-                lc.setText("");
-                lettersInRack.remove(letter);
+            if (lc.getText().equalsIgnoreCase(letter)) {
+                lc.removeLetter();
                 return lc;
             }
         }
@@ -77,8 +78,7 @@ abstract class Player {
     }
 
     void putLetterInRack(String string, LetterContainer lc) {
-        lc.setText(string);
-        lettersInRack.add(string);
+        lc.addLetter(string);
     }
 
     void addPlayableMove(Move move, int score) {

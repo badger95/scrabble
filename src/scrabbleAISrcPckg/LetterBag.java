@@ -13,6 +13,19 @@ public final class LetterBag {
     private static final LinkedList<Character> letters = new LinkedList<Character>(); //linked list allows for easy random removal
     static Map<Character,Integer> letterScoreMappings = new HashMap<>();
     static {
+        letterScoreMappings.put('a', 1);letterScoreMappings.put('b', 3);
+        letterScoreMappings.put('c', 3);letterScoreMappings.put('d', 2);
+        letterScoreMappings.put('e', 1);letterScoreMappings.put('f', 4);
+        letterScoreMappings.put('g', 2);letterScoreMappings.put('h', 4);
+        letterScoreMappings.put('i', 1);letterScoreMappings.put('j', 8);
+        letterScoreMappings.put('k', 5);letterScoreMappings.put('l', 1);
+        letterScoreMappings.put('m', 3);letterScoreMappings.put('n', 1);
+        letterScoreMappings.put('o', 1);letterScoreMappings.put('p', 3);
+        letterScoreMappings.put('q', 10);letterScoreMappings.put('r', 1);
+        letterScoreMappings.put('s', 1);letterScoreMappings.put('t', 1);
+        letterScoreMappings.put('u', 1);letterScoreMappings.put('v', 4);
+        letterScoreMappings.put('w', 4);letterScoreMappings.put('x', 8);
+        letterScoreMappings.put('y', 4);letterScoreMappings.put('z', 10);
         letterScoreMappings.put('A', 1);letterScoreMappings.put('B', 3);
         letterScoreMappings.put('C', 3);letterScoreMappings.put('D', 2);
         letterScoreMappings.put('E', 1);letterScoreMappings.put('F', 4);
@@ -82,35 +95,27 @@ public final class LetterBag {
 
     static String getRandomFromBagAsString(){
         Random random = new Random();
-        int randint = random.nextInt(letters.size());
-        return letters.remove(randint).toString();
-    }
-
-    static String getRandomFromBagAsChar(){
-        Random random = new Random();
-        int randint = random.nextInt(letters.size());
-        return letters.remove(randint).toString();
+        if (letters.size() > 0) {
+            int randint = random.nextInt(letters.size());
+            return letters.remove(randint).toString();
+        }
+        else return null;
     }
 
     private static boolean isBagEmpty() {
         return letters.isEmpty();
     }
 
-    static LetterBag getInstance() {
+    static void createInstance() {
         if (ourInstance == null)
-            ourInstance = new LetterBag ();
-        return ourInstance;
+            ourInstance = new LetterBag();
     }
 
     public static int numberOfRemainingLetters(){
         return letters.size();
     }
 
-    public static void addLetter(Character letterTile) {
+    static void addLetter(Character letterTile) {
         letters.add(letterTile);
-    }
-
-    public int getLettersScore(String letter) {
-           return letterScoreMappings.get(letter.charAt(0));
     }
 }

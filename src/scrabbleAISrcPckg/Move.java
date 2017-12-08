@@ -1,59 +1,63 @@
 package scrabbleAISrcPckg;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 class Move {
 
-    private LetterContainer[] containersOfWord;
     private String word;
-    private Map<LetterContainer, LetterContainer> moveMapping = new HashMap<>();
+    private List<TileMove> tileMoves = new ArrayList<>();
 
-    Move(List<LetterContainer> letterContainerList, Map<LetterContainer, LetterContainer> moveMapping) {
-        containersOfWord = new LetterContainer[letterContainerList.size()];
-        StringBuilder sb = new StringBuilder();
-        this.moveMapping = moveMapping;
-        int i = 0;
-        for (LetterContainer l : letterContainerList) {
-            sb.append(l.getText());
-            containersOfWord[i] = l;
-            i++;
+    Move(String word, List<TileMove> tileMoves) {
+        List<TileMove> newTileMoves = new ArrayList<>();
+        for (TileMove tileMove : tileMoves) {
+            TileMove newTileMove = new TileMove(tileMove.getSource(), tileMove.getDestination(), tileMove.getCharacter());
+            newTileMoves.add(newTileMove);
         }
-        word = sb.toString();
+        this.tileMoves = newTileMoves;
+        this.word = word;
     }
 
-    Move(Set<LetterContainer> letterContainerList, Map<LetterContainer,LetterContainer> moveMapping) {
-        containersOfWord = new LetterContainer[letterContainerList.size()];
-        StringBuilder sb = new StringBuilder();
-        this.moveMapping = moveMapping;
-        int i = 0;
-        for (LetterContainer l : letterContainerList) {
-            sb.append(l.getText());
-            containersOfWord[i] = l;
-            i++;
-        }
-        word = sb.toString();
+    Move() {
     }
 
-    Move(LetterContainer letter) {
-        word = letter.getText();
+
+    void addTileMoves(List<TileMove> tileMovesToBeAdded) {
+        tileMoves.addAll(tileMovesToBeAdded);
     }
 
-    LetterContainer[] getContainersOfWord() {
-        return containersOfWord;
+    List<TileMove> getTileMoves() {
+        return tileMoves;
     }
 
-    String getWordAsString() {
+    void setTileMoves(List<TileMove> tileMoves) {
+        this.tileMoves = tileMoves;
+    }
+
+    void setWord(String word) {
+        this.word = word;
+    }
+
+    String getWord() {
         return word;
     }
 
-    public Map<LetterContainer, LetterContainer> getMoveMapping() {
-        return moveMapping;
+    void addTileMove(TileMove newTileMove) {
+        tileMoves.add(newTileMove);
     }
 
-    public void setMoveMapping(Map<LetterContainer, LetterContainer> moveMapping) {
-        this.moveMapping = moveMapping;
+    boolean removeTileMove(TileMove newTileMove) {
+        return tileMoves.remove(newTileMove);
+    }
+
+    Map<LetterContainer, LetterContainer> getTileMoveMapping() {
+        Map<LetterContainer, LetterContainer> moveMapping = new HashMap<>();
+        for (TileMove tileMove : tileMoves) {
+            moveMapping.put(tileMove.getSource(), tileMove.getDestination());
+        }
+
+        return moveMapping;
     }
 }
