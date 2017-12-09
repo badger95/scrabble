@@ -13,7 +13,7 @@ class Move {
     Move(String word, List<TileMove> tileMoves) {
         List<TileMove> newTileMoves = new ArrayList<>();
         for (TileMove tileMove : tileMoves) {
-            TileMove newTileMove = new TileMove(tileMove.getSource(), tileMove.getDestination(), tileMove.getCharacter());
+            TileMove newTileMove = new TileMove(tileMove.isFromRack(), tileMove.getDestination(), tileMove.getCharacter());
             newTileMoves.add(newTileMove);
         }
         this.tileMoves = newTileMoves;
@@ -52,10 +52,10 @@ class Move {
         return tileMoves.remove(newTileMove);
     }
 
-    Map<LetterContainer, LetterContainer> getTileMoveMapping() {
-        Map<LetterContainer, LetterContainer> moveMapping = new HashMap<>();
+    Map<Boolean, LetterContainer> getTileMoveMapping() {
+        Map<Boolean, LetterContainer> moveMapping = new HashMap<>();
         for (TileMove tileMove : tileMoves) {
-            moveMapping.put(tileMove.getSource(), tileMove.getDestination());
+            moveMapping.put(tileMove.isFromRack(), tileMove.getDestination());
         }
 
         return moveMapping;

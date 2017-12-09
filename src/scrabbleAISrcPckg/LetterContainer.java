@@ -15,7 +15,7 @@ import javafx.scene.text.Text;
 class LetterContainer extends StackPane {
 
     private Text text; // what actually gets displayed
-    Rectangle rectangle;
+    private Rectangle rectangle;
     boolean containsLetter = false;
     private Paint originalColor;
     private String bonusText = ""; // denotes bonus text or star

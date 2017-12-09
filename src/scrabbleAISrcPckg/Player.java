@@ -1,9 +1,7 @@
 package scrabbleAISrcPckg;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 abstract class Player {
 
@@ -70,6 +68,16 @@ abstract class Player {
         for (LetterContainer lc : letterRack.getLetters()) {
             if (lc.getText().equalsIgnoreCase(letter)) {
                 lc.removeLetter();
+                return lc;
+            }
+        }
+
+        return null;
+    }
+
+    LetterContainer getLettersContainerFromRack(String letter) {
+        for (LetterContainer lc : letterRack.getLetters()) {
+            if (lc.getText().equalsIgnoreCase(letter)) {
                 return lc;
             }
         }

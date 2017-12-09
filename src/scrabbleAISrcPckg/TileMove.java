@@ -1,23 +1,23 @@
 package scrabbleAISrcPckg;
 
-public class TileMove {
+class TileMove {
 
-    private LetterContainer source;
+    private boolean isFromRack;
     private LetterContainer destination;
     private Character character;
 
-    TileMove(LetterContainer source, LetterContainer destination, Character character) {
-        this.source = source;
+    TileMove(boolean source, LetterContainer destination, Character character) {
+        this.isFromRack = source;
         this.destination = destination;
         this.character = character;
     }
 
-    LetterContainer getSource() {
-        return source;
+    boolean isFromRack() {
+        return isFromRack;
     }
 
-    void setSource(LetterContainer source) {
-        this.source = source;
+    void setFromRack(boolean fromRack) {
+        this.isFromRack = fromRack;
     }
 
     LetterContainer getDestination() {
