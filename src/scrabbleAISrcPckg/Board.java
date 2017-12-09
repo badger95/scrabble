@@ -146,4 +146,18 @@ class Board extends GridPane {
         return null;
     }
 
+    LetterContainer getNextRight(LetterContainer.Location location) {
+        int row = location.getRow();
+        int col = location.getCol() + 1;
+        if (col == 15) {
+            return GameManager.getColumnFifteenSentinels(row);
+        }
+        ObservableList<Node> children = getChildren();
+        for (Node n : children) {
+            if (getColumnIndex(n) == col && getRowIndex(n) == row) {
+                return (LetterContainer) n;
+            }
+        }
+        return null;
+    }
 }

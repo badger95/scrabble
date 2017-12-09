@@ -12,10 +12,25 @@ public class GameManager {
     static WordChecker wordChecker = new WordChecker();
     private static Map<LetterContainer, Set<Character>> acrossPlaysForEmptySquares = new HashMap<>();
     private static Map<LetterContainer, Set<Character>> downPlaysForEmptySquares = new HashMap<>();
+    private static Map<Integer, LetterContainer> columnFifteenSentinels = new HashMap<>();
 
     GameManager(Board board) {
         this.board = board;
         buildAlphabetSet(ALPHABET);
+        placeColumnFifteenSentinels();
+    }
+
+    private void placeColumnFifteenSentinels() {
+        for (int j = 0; j < 15; j++) {
+            LetterContainer sentinel = new LetterContainer(null, null, j, 15, board);
+            Set<Character> emptyPlayableSet = new HashSet<>();
+            acrossPlaysForEmptySquares.put(sentinel, emptyPlayableSet);
+            columnFifteenSentinels.put(j, sentinel);
+        }
+    }
+
+    static LetterContainer getColumnFifteenSentinels(int row) {
+        return columnFifteenSentinels.get(row);
     }
 
     // Naively search all four squares adjacent to each newly committed tile for its neighbors, ignores diagonals
@@ -66,6 +81,14 @@ public class GameManager {
         downPlaysForEmptySquares.put(emptySquare, restrictedDownSet);
     }
 
+    static void addRestrictedAcrossLC(LetterContainer lc, HashSet<Character> playables){
+        acrossPlaysForEmptySquares.put(lc, playables);
+    }
+
+    static void addRestrictedDownLC(LetterContainer lc, HashSet<Character> playables){
+        downPlaysForEmptySquares.put(lc, playables);
+    }
+
     private String getWordAbove(LetterContainer.Location location) {
         final StringBuilder sb = new StringBuilder();
         if (location.getRow() != 0) {
@@ -78,7 +101,7 @@ public class GameManager {
                     sb.append(getLetterInColByOffSet(location, offset));
                 }
             }
-            return sb.toString();
+            return sb.reverse().toString();
         }
         return null;
     }
@@ -125,7 +148,7 @@ public class GameManager {
                 while (offset > (-1 * location.getCol()) && getLetterInRowByOffSet(location, --offset) != ' ') {
                     sb.append(getLetterInRowByOffSet(location, offset));
                 }
-                return sb.toString();
+                return sb.reverse().toString();
             }
         }
         return null;
@@ -136,6 +159,7 @@ public class GameManager {
         int col = location.getCol();
         List<LetterContainer> lcsOfWordToLeftAndChar = new ArrayList<>();
         if (location.getCol() != 0) {
+
             int offset = -1;
             char letterLeft = getLetterInRowByOffSet(location, offset);
             if (letterLeft != ' ') {
@@ -164,6 +188,10 @@ public class GameManager {
 
         if (wordAfter == null) {
             wordAfter = "";
+        }
+
+        if (wordAfter.equals("") && wordBefore.equals("")) {
+            return restrictedSet;
         }
 
         for (Character c : ALPHABET) {
@@ -281,6 +309,7 @@ public class GameManager {
 
     private static void removeNewlyPopulatedFromFringeSet(LetterContainer letterContainer) {
         acrossPlaysForEmptySquares.remove(letterContainer);
+        downPlaysForEmptySquares.remove(letterContainer);
     }
 
     private static void buildAlphabetSet(final Set<Character> characters) {
@@ -345,10 +374,10 @@ public class GameManager {
     private void placeHighestScoringWord(Move highestScoringMove, Player player) {
         if (highestScoringMove != null) {
             for (TileMove tileMove : highestScoringMove.getTileMoves()) {
-                LetterContainer target = tileMove.getDestination();
-                target.addLetter(tileMove.getCharacter().toString());
                 if (tileMove.isFromRack()) {
                     player.removeLetterFromRack(tileMove.getCharacter().toString());
+                    LetterContainer target = tileMove.getDestination();
+                    target.addLetter(tileMove.getCharacter().toString());
                 }
             }
         }
@@ -427,45 +456,48 @@ public class GameManager {
 
             for (int j = 0; j < node.children.length; j++) {
                 WordChecker.TrieNode child = node.children[j];
-                if (child == null) {
-                    continue;
-                }
+                if (child != null) {
+                    Character characterAtChildNode = WordChecker.toChar(j);
 
-                Character characterAtChildNode = WordChecker.toChar(j);
-                if (player.letterRackContainsLetter(characterAtChildNode.toString()) &&
-                        acrossPlaysForEmptySquares.get(currentSquare) != null &&
-                        acrossPlaysForEmptySquares.get(currentSquare).contains(characterAtChildNode)) {
-                    LetterContainer removedLettersContainer = player.removeLetterFromRack(characterAtChildNode.toString());
-                    LetterContainer nextSquare = board.getRefToSquareByRowColumn(currentSquare.getLocation().getRow(),
-                            currentSquare.getLocation().getCol() + 1);
-                    extendRight(wordSoFar + characterAtChildNode, child, nextSquare, player);
-                    player.putLetterInRack(characterAtChildNode.toString().toUpperCase(), removedLettersContainer);
+                    if (player.letterRackContainsLetter(characterAtChildNode.toString()) &&
+                            (acrossPlaysForEmptySquares.get(currentSquare) == null ||
+                            acrossPlaysForEmptySquares.get(currentSquare).contains(characterAtChildNode))) {
+
+                        LetterContainer removedLettersContainer = player.removeLetterFromRack(characterAtChildNode.toString());
+                        LetterContainer nextSquare = board.getNextRight(currentSquare.getLocation());
+                        extendRight(wordSoFar + characterAtChildNode, child, nextSquare, player);
+                        player.putLetterInRack(characterAtChildNode.toString().toUpperCase(), removedLettersContainer);
+                    }
                 }
             }
-        } else if (currentSquare != null) {
+        } else if (currentSquare != null){
             extendRightCurrentOccupied(wordSoFar, node, currentSquare, player);
         }
     }
 
     private void recordLegalMove(String word, Player player, LetterContainer lastContainerOfWord) {
-        Move move = new Move();
         List<TileMove> tileMoves = new ArrayList<>();
         int row = lastContainerOfWord.getLocation().getRow();
-        int col = lastContainerOfWord.getLocation().getCol();
+        int col = lastContainerOfWord.getLocation().getCol() - 1;
+        boolean containsLetterFromRack = false;
+        boolean containsLetterOnBoard = false;
         for (int i = 0; i < word.length(); i++) {
             LetterContainer currentLetterInWord = board.getRefToSquareByRowColumn(row,col - i);
-            boolean alreadyOnBoard = board.getRefToSquareByRowColumn(row,col - i).containsLetter;
-            TileMove tileMove;
-            if (alreadyOnBoard) {
-                tileMove = new TileMove(false, currentLetterInWord, word.charAt(word.length() - 1 - i));
+            boolean fromRack = !board.getRefToSquareByRowColumn(row,col - i).containsLetter;
+            if (fromRack) {
+                containsLetterFromRack = true;
             } else {
-                tileMove = new TileMove(true, currentLetterInWord, word.charAt(word.length() - 1 - i));
+                containsLetterOnBoard = true;
             }
+            TileMove tileMove = new TileMove(fromRack, currentLetterInWord, word.charAt(word.length() - 1 - i));
             tileMoves.add(tileMove);
         }
-        move.addTileMoves(tileMoves);
-        move.setWord(word);
-        player.addPlayableMove(move, getMoveScore(move));
+
+        // a legal play requires at least one letter from the players rack and one on the board
+        if (containsLetterFromRack && containsLetterOnBoard) {
+            Move move = new Move(word, tileMoves);
+            player.addPlayableMove(move, getMoveScore(move));
+        }
     }
 
     private void extendRightCurrentOccupied(String wordSoFar, WordChecker.TrieNode node, LetterContainer currentSquare,

@@ -58,7 +58,6 @@ public class Main extends Application {
             whoseTurn.setText(mutex.getWhoseTurnLabel());
             Set<LetterContainer> playedMove = gameManager.getPlayedWord();
             gameManager.updatePlayableCharsForSquaresAroundWord(playedMove);
-
             gameManager.doBestPossibleMove(humanPlayer);
             humanPlayer.fillLetterRack();
         });

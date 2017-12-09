@@ -21,7 +21,6 @@ class LetterContainer extends StackPane {
     private String bonusText = ""; // denotes bonus text or star
     private Location location;
 
-
     LetterContainer(String displaySting, Paint originalColor, final int row, final int col, GridPane parent) {
         location = new Location(row, col, parent);
         text = new Text(displaySting);
