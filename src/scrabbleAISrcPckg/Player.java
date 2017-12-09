@@ -6,7 +6,6 @@ import java.util.Map;
 abstract class Player {
 
     private int score;
-
     private LetterRack letterRack;
     private Map<Move, Integer> playableMoves;
 
@@ -68,16 +67,6 @@ abstract class Player {
         for (LetterContainer lc : letterRack.getLetters()) {
             if (lc.getText().equalsIgnoreCase(letter)) {
                 lc.removeLetter();
-                return lc;
-            }
-        }
-
-        return null;
-    }
-
-    LetterContainer getLettersContainerFromRack(String letter) {
-        for (LetterContainer lc : letterRack.getLetters()) {
-            if (lc.getText().equalsIgnoreCase(letter)) {
                 return lc;
             }
         }

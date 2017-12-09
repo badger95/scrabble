@@ -81,14 +81,6 @@ public class GameManager {
         downPlaysForEmptySquares.put(emptySquare, restrictedDownSet);
     }
 
-    static void addRestrictedAcrossLC(LetterContainer lc, HashSet<Character> playables){
-        acrossPlaysForEmptySquares.put(lc, playables);
-    }
-
-    static void addRestrictedDownLC(LetterContainer lc, HashSet<Character> playables){
-        downPlaysForEmptySquares.put(lc, playables);
-    }
-
     private String getWordAbove(LetterContainer.Location location) {
         final StringBuilder sb = new StringBuilder();
         if (location.getRow() != 0) {

@@ -151,13 +151,5 @@ class LetterContainer extends StackPane {
         int getCol() {
             return col;
         }
-
-        GridPane getParent() {
-            return parent;
-        }
-
-        boolean equals(Location location) {
-            return (location.parent.equals(parent) && row == location.row && col == location.col);
-        }
     }
 }

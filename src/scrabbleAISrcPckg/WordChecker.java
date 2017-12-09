@@ -75,11 +75,6 @@ class WordChecker {
         return parent;
     }
 
-    boolean startsWith(String prefix) {
-        TrieNode p = search(prefix);
-        return p != null;
-    }
-
     TrieNode getRoot() {
         return root;
     }
