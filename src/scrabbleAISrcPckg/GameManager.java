@@ -529,7 +529,7 @@ public class GameManager {
     }
 
     private void extendDown(String wordSoFar, WordChecker.TrieNode node, LetterContainer currentSquare, Player player, Boolean anchorFilled) {
-        if (currentSquare != null && !currentSquare.containsLetter) {
+        if (currentSquare != null && !currentSquare.containsLetter && node != null) {
             if (node.endOfWord && anchorFilled) {
                 recordLegalDownMove(wordSoFar, player, currentSquare);
             }
@@ -550,7 +550,7 @@ public class GameManager {
                     }
                 }
             }
-        } else if (currentSquare != null){
+        } else if (currentSquare != null && node != null){
             extendDownCurrentOccupied(wordSoFar, node, currentSquare, player);
         }
     }
@@ -621,7 +621,7 @@ public class GameManager {
     }
 
     private void extendRight(String wordSoFar, WordChecker.TrieNode node, LetterContainer currentSquare, Player player, Boolean anchorFilled) {
-        if (currentSquare != null && !currentSquare.containsLetter) {
+        if (currentSquare != null && !currentSquare.containsLetter && node != null) {
             if (anchorFilled && node.endOfWord) {
                 recordLegalAcrossMove(wordSoFar, player, currentSquare);
             }
@@ -642,7 +642,7 @@ public class GameManager {
                     }
                 }
             }
-        } else if (currentSquare != null){
+        } else if (currentSquare != null && node != null){
             extendRightCurrentOccupied(wordSoFar, node, currentSquare, player);
         }
     }
