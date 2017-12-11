@@ -53,11 +53,9 @@ public class Main extends Application {
         Button endTurnButton = new Button("End Turn");
         Label whoseTurn = new Label(mutex.getWhoseTurnLabel());
         endTurnButton.setOnMouseClicked((MouseEvent event) -> {
-            GameManager.commitAllNewlyPopulatedContainers();
+            gameManager.commitAllNewlyPopulatedContainers();
             mutex.switchTurns();
             whoseTurn.setText(mutex.getWhoseTurnLabel());
-            Set<LetterContainer> playedMove = gameManager.getPlayedWord();
-            gameManager.updatePlayableCharsForSquaresAroundWord(playedMove);
             gameManager.doBestPossibleMove(humanPlayer);
             humanPlayer.fillLetterRack();
         });

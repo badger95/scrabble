@@ -117,7 +117,7 @@ class LetterContainer extends StackPane {
     }
 
     String getText() {
-        return text.getText();
+        return text.getText().length() > 1 ? "" : text.getText();
     }
 
     void setText(String str) {

@@ -43,6 +43,7 @@ class Board extends GridPane {
                     square = new LetterContainer("", Color.TAN, row, col, this);
                 }
                 add(square, col, row);
+                setConstraints(square, col, row);
             }
         }
         setPadding(new Insets(0,15,0,15));
@@ -152,12 +153,15 @@ class Board extends GridPane {
         if (col == 15) {
             return GameManager.getColumnFifteenSentinels(row);
         }
-        ObservableList<Node> children = getChildren();
-        for (Node n : children) {
-            if (getColumnIndex(n) == col && getRowIndex(n) == row) {
-                return (LetterContainer) n;
-            }
+        return getRefToSquareByRowColumn(row, col);
+    }
+
+    LetterContainer getNextDown(LetterContainer.Location location) {
+        int row = location.getRow() + 1;
+        int col = location.getCol();
+        if (row == 15) {
+            return GameManager.getRowFifteenSentinels(col);
         }
-        return null;
+        return getRefToSquareByRowColumn(row, col);
     }
 }
