@@ -4,13 +4,10 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 
-/**
- * Created by DELL660 on 7/11/2017.
- */
 public final class LetterBag {
 
     private static LetterBag ourInstance;
-    private static final LinkedList<Character> letters = new LinkedList<Character>(); //linked list allows for easy random removal
+    private static final LinkedList<Character> letters = new LinkedList<>(); //linked list allows for easy random removal
     static Map<Character,Integer> letterScoreMappings = new HashMap<>();
     static {
         letterScoreMappings.put('a', 1);letterScoreMappings.put('b', 3);

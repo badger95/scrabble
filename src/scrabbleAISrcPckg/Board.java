@@ -14,7 +14,6 @@ class Board extends GridPane {
     static Set<LetterContainer> newlyPopulatedContainers = new HashSet<>();
 
     static char[][] virtualBoard = new char[15][15];
-    private static List<Row> oneDimensionalBoard = new ArrayList<>();
 
     static final String TRIPLE_WORD_SCORE = "Triple\nMove\nScore";
     static final String DOUBLE_LETTER_SCORE = "Double\n Letter\n Score";
@@ -24,7 +23,6 @@ class Board extends GridPane {
 
     Board() {
         buildVirtualBoard();
-        buildOneDimensionalCopyOfBoard();
         for (int row = 0; row < 15; row++) {
             for (int col = 0; col < 15; col++) {
                 LetterContainer square;
@@ -99,25 +97,6 @@ class Board extends GridPane {
         }
     }
 
-    private static void buildOneDimensionalCopyOfBoard() {
-        // copy references to the 15 rows in the virtual board
-        for (int i = 0; i < 15; i++) {
-            char[] elements = new char[15];
-            System.arraycopy(virtualBoard[i], 0, elements, 0, 15);
-            Row row = new Row(elements, false);
-            oneDimensionalBoard.add(row);
-        }
-        // copy references to the 15 columns of the virtual board
-        for (int i = 0; i < 15; i++) {
-            char[] elements = new char[15];
-            for (int k = 0; k < 15; k++) {
-                elements[k] = virtualBoard[k][i];
-            }
-            Row row = new Row(elements, true);
-            oneDimensionalBoard.add(row);
-        }
-    }
-
     private static char[][] transposeBoard(char [][] board){
         char[][] transposed = new char[board[0].length][board.length];
         for (int i = 0; i < board.length; i++)
@@ -128,10 +107,6 @@ class Board extends GridPane {
 
     char[][] getVirtualBoard() {
         return virtualBoard;
-    }
-
-    static List<Row> getOneDimensionalBoard() {
-        return oneDimensionalBoard;
     }
 
     LetterContainer getRefToSquareByRowColumn(int row, int col) {

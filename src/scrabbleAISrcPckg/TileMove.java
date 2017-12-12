@@ -16,23 +16,11 @@ class TileMove {
         return isFromRack;
     }
 
-    void setFromRack(boolean fromRack) {
-        this.isFromRack = fromRack;
-    }
-
     LetterContainer getDestination() {
         return destination;
     }
 
-    void setDestination(LetterContainer destination) {
-        this.destination = destination;
-    }
-
     Character getCharacter() {
         return character;
-    }
-
-    void setCharacter(Character character) {
-        this.character = character;
     }
 }

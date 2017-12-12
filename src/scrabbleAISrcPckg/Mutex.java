@@ -28,8 +28,4 @@ class Mutex {
         return "Player " + activePlayerId + " 's turn.";
     }
 
-    int getPlayerWhoseTurnItis() {
-        return activePlayerId;
-    }
-
 }

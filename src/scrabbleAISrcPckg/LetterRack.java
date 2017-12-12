@@ -21,12 +21,8 @@ class LetterRack extends GridPane {
         setPadding(new Insets(0,15,15,15));
     }
 
-    public LetterContainer[] getLetters() {
+    LetterContainer[] getLetters() {
         return letters;
-    }
-
-    public void setLetters(LetterContainer[] letters) {
-        this.letters = letters;
     }
 
     boolean isEmpty() {

@@ -24,6 +24,94 @@ public class GameManager {
         placeRowColumnFifteenSentinels();
     }
 
+    private static void buildAlphabetSet(final Set<Character> characters) {
+        characters.add('a');
+        characters.add('b');
+        characters.add('c');
+        characters.add('d');
+        characters.add('e');
+        characters.add('f');
+        characters.add('g');
+        characters.add('h');
+        characters.add('i');
+        characters.add('j');
+        characters.add('k');
+        characters.add('l');
+        characters.add('m');
+        characters.add('n');
+        characters.add('o');
+        characters.add('p');
+        characters.add('q');
+        characters.add('r');
+        characters.add('s');
+        characters.add('t');
+        characters.add('u');
+        characters.add('v');
+        characters.add('w');
+        characters.add('x');
+        characters.add('y');
+        characters.add('z');
+    }
+
+    private static void removeNewlyPopulatedFromFringeSet(LetterContainer letterContainer) {
+        acrossPlaysForEmptySquares.remove(letterContainer);
+        downPlaysForEmptySquares.remove(letterContainer);
+    }
+
+    private static int getMoveScore(Move move) {
+        int wordScore = 0;
+        int numTripleWordBonuses = 0;
+        int numDoubleWordBonuses = 0;
+        for (TileMove tileMove : move.getTileMoves()) {
+            int letterScore = LetterBag.letterScoreMappings.get(tileMove.getCharacter());
+            // check move mapping to see if this letter was placed from rack, if so apply bonus
+            if (tileMove.isFromRack()) {
+                switch (tileMove.getDestination().getBonusText()) {
+                    case DOUBLE_WORD_SCORE:
+                    case STAR:
+                        numDoubleWordBonuses++;
+                        break;
+                    case TRIPLE_LETTER_SCORE:
+                        letterScore = letterScore * 3;
+                        break;
+                    case DOUBLE_LETTER_SCORE:
+                        letterScore = letterScore * 2;
+                        break;
+                    case TRIPLE_WORD_SCORE:
+                        numTripleWordBonuses++;
+                        break;
+                }
+            }
+            wordScore += letterScore;
+        }
+        wordScore = wordScore * ((numDoubleWordBonuses != 0) ? 2 * numDoubleWordBonuses : 1) *
+                ((numTripleWordBonuses != 0) ? 3 * numTripleWordBonuses : 1);
+        return wordScore;
+    }
+
+    private static Set<Character> restrictBySurroundingWords(String wordBefore, String wordAfter, Set<Character> restrictedSet) {
+        if (wordBefore == null) {
+            wordBefore = "";
+        }
+
+        if (wordAfter == null) {
+            wordAfter = "";
+        }
+
+        if (wordAfter.equals("") && wordBefore.equals("")) {
+            return restrictedSet;
+        }
+
+        for (Character c : ALPHABET) {
+            WordChecker.TrieNode result = wordChecker.search(wordBefore + c.toString() + wordAfter);
+            if (null == result || !result.endOfWord ) {
+                restrictedSet.remove(c);
+            }
+        }
+
+        return restrictedSet;
+    }
+
     private void placeRowColumnFifteenSentinels() {
         for (int j = 0; j < 15; j++) {
             LetterContainer colSentinel = new LetterContainer(null, null, j, 15, board);
@@ -36,14 +124,6 @@ public class GameManager {
             sentinels.add(colSentinel);
             sentinels.add(rowSentinel);
         }
-    }
-
-    static LetterContainer getColumnFifteenSentinels(int row) {
-        return columnFifteenSentinels.get(row);
-    }
-
-    static LetterContainer getRowFifteenSentinels(int col) {
-        return rowFifteenSentinels.get(col);
     }
 
     // Naively search all four squares adjacent to each newly committed tile for its neighbors, ignores diagonals
@@ -76,27 +156,31 @@ public class GameManager {
         return adjacentSquares;
     }
 
-    private void restrictEmptySquareAndSaveCrossCheckScore(LetterContainer emptySquare) {
-        LetterContainer.Location currentLocation = emptySquare.getLocation();
+    /* Compute the playable chars for both across and down moves for each empty (anchor) square.
+    Calls saveAcrossAnchorCrossScores and saveDownAnchorCrossScores for each anchor*/
+    private void restrictEmptySquareAndSaveCrossCheckScore(LetterContainer anchorSquare) {
+        LetterContainer.Location currentLocation = anchorSquare.getLocation();
         Set<Character> restrictedAcrossSet = new HashSet<>();
         buildAlphabetSet(restrictedAcrossSet);
         Set<Character> restrictedDownSet = new HashSet<>();
         buildAlphabetSet(restrictedDownSet);
+        // get surrounding words
         String wordAbove = getWordAbove(currentLocation);
         String wordBelow = getWordBelow(currentLocation);
         String wordRight = getWordRight(currentLocation);
         String wordLeft = getWordLeft(currentLocation);
-
+        // generate restricted sets for cross words
         restrictedAcrossSet = restrictBySurroundingWords(wordAbove, wordBelow, restrictedAcrossSet);
         restrictedDownSet = restrictBySurroundingWords(wordLeft, wordRight, restrictedDownSet);
+        // save crossScores for the anchor
+        acrossPlaysForEmptySquares.put(anchorSquare, restrictedAcrossSet);
+        saveAcrossAnchorCrossScores(anchorSquare, wordAbove, wordBelow);
+        downPlaysForEmptySquares.put(anchorSquare, restrictedDownSet);
+        saveDownAnchorCrossScore(anchorSquare, wordRight, wordLeft);
+    }
 
-        acrossPlaysForEmptySquares.put(emptySquare, restrictedAcrossSet);
-        Map<Character, Integer> charScoresForAcrossAnchor = new HashMap<>();
-        for (Character c : acrossPlaysForEmptySquares.get(emptySquare)) {
-            charScoresForAcrossAnchor.put(c, getWordScore(wordAbove + c + wordBelow));
-        }
-        acrossAnchorCharacterScores.put(emptySquare, charScoresForAcrossAnchor);
-        downPlaysForEmptySquares.put(emptySquare, restrictedDownSet);
+    /* Stores the value that would be scored for each playable char in anchor, when making a across move through anchor */
+    private void saveDownAnchorCrossScore(LetterContainer emptySquare, String wordRight, String wordLeft) {
         Map<Character, Integer> charScoresForDownAnchor = new HashMap<>();
         for (Character c : downPlaysForEmptySquares.get(emptySquare)) {
             charScoresForDownAnchor.put(c, getWordScore(wordLeft + c + wordRight));
@@ -104,6 +188,16 @@ public class GameManager {
         downAnchorCharacterScores.put(emptySquare, charScoresForDownAnchor);
     }
 
+    /* Stores the value that would be scored for each playable char in anchor, when making a down move through anchor */
+    private void saveAcrossAnchorCrossScores(LetterContainer anchorSquare, String wordAbove, String wordBelow) {
+        Map<Character, Integer> charScoresForAcrossAnchor = new HashMap<>();
+        for (Character c : acrossPlaysForEmptySquares.get(anchorSquare)) {
+            charScoresForAcrossAnchor.put(c, getWordScore(wordAbove + c + wordBelow));
+        }
+        acrossAnchorCharacterScores.put(anchorSquare, charScoresForAcrossAnchor);
+    }
+
+    /* Returns the sum of the scores for each letter in a word, no bonuses applied */
     private Integer getWordScore(String word) {
         if (word == null || word.equals("")) {
             return 0;
@@ -116,6 +210,58 @@ public class GameManager {
         }
     }
 
+    /* Returns a string representing the contiguous tiles left up to the edge of the board or an empty square */
+    private String getWordLeft(LetterContainer.Location location) {
+        final StringBuilder sb = new StringBuilder();
+        if (location.getCol() != 0) {
+            int offset = -1;
+            char letterLeft = getLetterInRowByOffSet(location, offset);
+            if (letterLeft != ' ') {
+                sb.append(letterLeft);
+                while (offset > (-1 * location.getCol()) && getLetterInRowByOffSet(location, --offset) != ' ') {
+                    sb.append(getLetterInRowByOffSet(location, offset));
+                }
+                return sb.reverse().toString();
+            }
+        }
+        return null;
+    }
+
+    /* Returns a string representing the contiguous tiles above up to the edge of the board or an empty square */
+    private String getWordBelow(LetterContainer.Location location) {
+        final StringBuilder sb = new StringBuilder();
+        if (location.getRow() != 14) {
+            int offset = 1;
+            char letterBelow = getLetterInColByOffSet(location, offset);
+            if (letterBelow != ' ') {
+                sb.append(letterBelow);
+                while (offset < (14 - location.getRow()) && getLetterInColByOffSet(location, ++offset) != ' ') {
+                    sb.append(getLetterInColByOffSet(location, offset));
+                }
+                return sb.toString();
+            }
+        }
+        return null;
+    }
+
+    /* Returns a string representing the contiguous tiles right up to the edge of the board or an empty square */
+    private String getWordRight(LetterContainer.Location location) {
+        final StringBuilder sb = new StringBuilder();
+        if (location.getCol() != 14) {
+            int offset = 1;
+            char letterRight = getLetterInRowByOffSet(location, offset);
+            if (letterRight != ' ') {
+                sb.append(letterRight);
+                while (offset < (14 - location.getCol()) && getLetterInRowByOffSet(location, ++offset) != ' ') {
+                    sb.append(getLetterInRowByOffSet(location, offset));
+                }
+                return sb.toString();
+            }
+        }
+        return null;
+    }
+
+    /* Returns a string representing the contiguous tiles left up to the edge of the board or an empty square */
     private String getWordAbove(LetterContainer.Location location) {
         final StringBuilder sb = new StringBuilder();
         if (location.getRow() != 0) {
@@ -133,55 +279,7 @@ public class GameManager {
         return null;
     }
 
-    private String getWordLeft(LetterContainer.Location location) {
-        final StringBuilder sb = new StringBuilder();
-        if (location.getCol() != 0) {
-            int offset = -1;
-            char letterLeft = getLetterInRowByOffSet(location, offset);
-            if (letterLeft != ' ') {
-                sb.append(letterLeft);
-                while (offset > (-1 * location.getCol()) && getLetterInRowByOffSet(location, --offset) != ' ') {
-                    sb.append(getLetterInRowByOffSet(location, offset));
-                }
-                return sb.reverse().toString();
-            }
-        }
-        return null;
-    }
-
-    private String getWordBelow(LetterContainer.Location location) {
-        final StringBuilder sb = new StringBuilder();
-        if (location.getRow() != 14) {
-            int offset = 1;
-            char letterBelow = getLetterInColByOffSet(location, offset);
-            if (letterBelow != ' ') {
-                sb.append(letterBelow);
-                while (offset < (14 - location.getRow()) && getLetterInColByOffSet(location, ++offset) != ' ') {
-                    sb.append(getLetterInColByOffSet(location, offset));
-                }
-                return sb.toString();
-            }
-        }
-        return null;
-    }
-
-    private String getWordRight(LetterContainer.Location location) {
-        final StringBuilder sb = new StringBuilder();
-        if (location.getCol() != 14) {
-            int offset = 1;
-            char letterRight = getLetterInRowByOffSet(location, offset);
-            if (letterRight != ' ') {
-                sb.append(letterRight);
-                while (offset < (14 - location.getCol()) && getLetterInRowByOffSet(location, ++offset) != ' ') {
-                    sb.append(getLetterInRowByOffSet(location, offset));
-                }
-                return sb.toString();
-            }
-        }
-        return null;
-    }
-
-    private List<LetterContainer> getExistingWordLeft(LetterContainer.Location location) {
+    private List<LetterContainer> getLCsOfWordLeft(LetterContainer.Location location) {
         int row = location.getRow();
         int col = location.getCol();
         List<LetterContainer> lcsOfWordToLeft = new ArrayList<>();
@@ -199,7 +297,7 @@ public class GameManager {
         return null; // edge of board
     }
 
-    private List<LetterContainer> getExistingWordAbove(LetterContainer.Location location) {
+    private List<LetterContainer> getLCsOfWordAbove(LetterContainer.Location location) {
         int row = location.getRow();
         int col = location.getCol();
         List<LetterContainer> lcsOfWordAbove = new ArrayList<>();
@@ -225,29 +323,7 @@ public class GameManager {
         return board.getVirtualBoard()[location.getRow()][location.getCol() + offset];
     }
 
-    private static Set<Character> restrictBySurroundingWords(String wordBefore, String wordAfter, Set<Character> restrictedSet) {
-        if (wordBefore == null) {
-            wordBefore = "";
-        }
-
-        if (wordAfter == null) {
-            wordAfter = "";
-        }
-
-        if (wordAfter.equals("") && wordBefore.equals("")) {
-            return restrictedSet;
-        }
-
-        for (Character c : ALPHABET) {
-            WordChecker.TrieNode result = wordChecker.search(wordBefore + c.toString() + wordAfter);
-            if (null == result || !result.endOfWord ) {
-                restrictedSet.remove(c);
-            }
-        }
-
-        return restrictedSet;
-    }
-
+    /* Returns the number of the associated WordChecker.TrieNode index corresponding to the given letter*/
     private int getChildIndexForLetter(String letter) {
         if (letter.equalsIgnoreCase("A")) {
             return 0;
@@ -306,32 +382,7 @@ public class GameManager {
         return -1;
     }
 
-    private int getNumNonAnchorsInRowToLeft(LetterContainer anchor) {
-        LetterContainer.Location location = anchor.getLocation();
-        Map<Integer, Set<LetterContainer>> anchorsInEachRow = getAnchorsInEachRow();
-        int row = location.getRow();
-        int col = location.getCol();
-        if (col == 0) {
-            return 0;
-        }
-
-        Set<LetterContainer> anchorsInSameRow = anchorsInEachRow.get(row);
-        if (anchorsInSameRow == null) {
-            return 0;
-        }
-        int max = 0;
-        for (LetterContainer a : anchorsInSameRow) {
-            if (a.getLocation().getCol() < col && a.getLocation().getCol() > max) {
-                max = a.getLocation().getCol();
-            }
-        }
-
-        if (max == 0) {
-            return col;
-        }
-        return col - max - 1;
-    }
-
+    /* Returns the number of empty squares to the contiguous above that have non-null cross check sets*/
     private int getNumNonAnchorsInColAbove(LetterContainer anchor) {
         LetterContainer.Location location = anchor.getLocation();
         Map<Integer, Set<LetterContainer>> anchorsInEachCol = getAnchorsInEachCol();
@@ -359,8 +410,35 @@ public class GameManager {
         return row - max - 1;
     }
 
+    /* Returns the number of empty squares to the contiguous left that have non-null cross check sets*/
+    private int getNumNonAnchorsInRowToLeft(LetterContainer anchor) {
+        LetterContainer.Location location = anchor.getLocation();
+        Map<Integer, Set<LetterContainer>> anchorsInEachRow = getAnchorsInEachRow();
+        int row = location.getRow();
+        int col = location.getCol();
+        if (col == 0) {
+            return 0;
+        }
+
+        Set<LetterContainer> anchorsInSameRow = anchorsInEachRow.get(row);
+        if (anchorsInSameRow == null) {
+            return 0;
+        }
+        int max = 0;
+        for (LetterContainer a : anchorsInSameRow) {
+            if (a.getLocation().getCol() < col && a.getLocation().getCol() > max) {
+                max = a.getLocation().getCol();
+            }
+        }
+
+        if (max == 0) {
+            return col;
+        }
+        return col - max - 1;
+    }
+
     private Map<Integer, Set<LetterContainer>> getAnchorsInEachRow() {
-        Set<LetterContainer> anchors = findPotentialAcrossAnchors().keySet();
+        Set<LetterContainer> anchors = findAcrossAnchors().keySet();
         Map<Integer, Set<LetterContainer>> anchorsInEachRow = new HashMap<>();
         for (int k = 0; k < 14; k++) {
             HashSet<LetterContainer> anchorsInThisRow = new HashSet<>();
@@ -375,7 +453,7 @@ public class GameManager {
     }
 
     private Map<Integer, Set<LetterContainer>> getAnchorsInEachCol() {
-        Set<LetterContainer> anchors = findPotentialDownAnchors().keySet();
+        Set<LetterContainer> anchors = findDownAnchors().keySet();
         Map<Integer, Set<LetterContainer>> anchorsInEachCol = new HashMap<>();
         for (int k = 0; k < 14; k++) {
             HashSet<LetterContainer> anchorsInThisCol = new HashSet<>();
@@ -389,76 +467,12 @@ public class GameManager {
         return anchorsInEachCol;
     }
 
-    private Map<LetterContainer, Set<Character>> findPotentialAcrossAnchors() {
+    private Map<LetterContainer, Set<Character>> findAcrossAnchors() {
         return acrossPlaysForEmptySquares;
     }
 
-    private Map<LetterContainer, Set<Character>> findPotentialDownAnchors() {
+    private Map<LetterContainer, Set<Character>> findDownAnchors() {
         return downPlaysForEmptySquares;
-    }
-
-    private static void removeNewlyPopulatedFromFringeSet(LetterContainer letterContainer) {
-        acrossPlaysForEmptySquares.remove(letterContainer);
-        downPlaysForEmptySquares.remove(letterContainer);
-    }
-
-    private static void buildAlphabetSet(final Set<Character> characters) {
-        characters.add('a');
-        characters.add('b');
-        characters.add('c');
-        characters.add('d');
-        characters.add('e');
-        characters.add('f');
-        characters.add('g');
-        characters.add('h');
-        characters.add('i');
-        characters.add('j');
-        characters.add('k');
-        characters.add('l');
-        characters.add('m');
-        characters.add('n');
-        characters.add('o');
-        characters.add('p');
-        characters.add('q');
-        characters.add('r');
-        characters.add('s');
-        characters.add('t');
-        characters.add('u');
-        characters.add('v');
-        characters.add('w');
-        characters.add('x');
-        characters.add('y');
-        characters.add('z');
-    }
-
-    private static int getMoveScore(Move move) {
-        int wordScore = 0;
-        int numTripleWordBonuses = 0;
-        int numDoubleWordBonuses = 0;
-        for (TileMove tileMove : move.getTileMoves()) {
-            int letterScore = LetterBag.letterScoreMappings.get(tileMove.getCharacter());
-            // check move mapping to see if this letter was placed from rack, if so apply bonus
-            if (tileMove.isFromRack()) {
-                switch (tileMove.getDestination().getBonusText()) {
-                    case DOUBLE_WORD_SCORE:
-                    case STAR:
-                        numDoubleWordBonuses++;
-                        break;
-                    case TRIPLE_LETTER_SCORE:
-                        letterScore = letterScore * 3;
-                        break;
-                    case DOUBLE_LETTER_SCORE:
-                        letterScore = letterScore * 2;
-                        break;
-                    case TRIPLE_WORD_SCORE:
-                        numTripleWordBonuses++;
-                        break;
-                }
-            }
-            wordScore += letterScore;
-        }
-        wordScore = wordScore * ((numDoubleWordBonuses != 0) ? 2 * numDoubleWordBonuses : 1) * ((numTripleWordBonuses != 0) ? 3 * numTripleWordBonuses : 1);
-        return wordScore;
     }
 
     private void placeHighestScoringWord(Move highestScoringMove, Player player) {
@@ -473,63 +487,37 @@ public class GameManager {
         }
     }
 
-    void doBestPossibleMove(Player player) {
-        player.clearPlayableMoves();
-        Map<LetterContainer, Set<Character>> potentialAcrosses = findPotentialAcrossAnchors();
-        for (LetterContainer anchor : potentialAcrosses.keySet()) {
-            if (!potentialAcrosses.get(anchor).isEmpty()) {
-                findAllPossibleAcrossMoves(player, anchor);
-            }
-        }
-
-        Map<LetterContainer, Set<Character>> potentialDowns = findPotentialDownAnchors();
-        for (LetterContainer anchor : potentialDowns.keySet()) {
-            if (!potentialDowns.get(anchor).isEmpty()) {
-                findAllPossibleDownMoves(player, anchor);
-            }
-        }
-
-        Move highestScoringMove = null;
-        int highScore = 0;
-        for (Map.Entry move : player.getPlayableMoves().entrySet()) {
-            if ((Integer) move.getValue() > highScore) {
-                highScore = (Integer) move.getValue();
-                highestScoringMove = (Move) move.getKey();
-            }
-        }
-
-        placeHighestScoringWord(highestScoringMove, player);
-        updatePlayerScore(player, highScore);
-    }
-
     private void updatePlayerScore(Player player, int highScore) {
         player.updateScore(highScore);
         System.out.println(player.getScore());
     }
 
-    private void findAllPossibleAcrossMoves(Player player, LetterContainer anchor) {
-        if (sentinels.contains(anchor)) {
-            return;
+    /* Records the tileMoves of word already on board, need to save these for scoring later, in-case they are extended*/
+    private void addTileMovesOfExistingWord(Move newMove, List<LetterContainer> lcsOfWordBefore) {
+        List<TileMove> wordOnTheBoard = new ArrayList<>();
+        int size = lcsOfWordBefore.size();
+        for (int k = size - 1; k >= 0; k--) {
+            LetterContainer letterContainer = lcsOfWordBefore.get(k);
+            TileMove tileThatIsAlreadyOnBoard = new TileMove(false, letterContainer, letterContainer.getText().charAt(0));
+            wordOnTheBoard.add(tileThatIsAlreadyOnBoard);
         }
-        Move newMove = new Move(); //copied later to save each playable moves
-        // first check for a word to the left
-        String wordLeft = getWordLeft(anchor.getLocation());
-        List<LetterContainer> letterContainersOfWordToLeft = getExistingWordLeft(anchor.getLocation());
-        if (wordLeft != null && letterContainersOfWordToLeft != null && !wordLeft.equals("")) {
-            addTileMovesOfExistingWord(newMove, letterContainersOfWordToLeft);
-            extendRight(wordLeft, wordChecker.search(wordLeft), anchor, player, false);
-        }
-        // find all left parts
-        else {
-            int limitToTheLeft = getNumNonAnchorsInRowToLeft(anchor);
-            getLeftPart(anchor, "", wordChecker.getRoot(), limitToTheLeft, player);
+        newMove.setTileMoves(wordOnTheBoard);
+    }
+
+    /* Updates the character restrictions around the adjacent squares of a newly placed word*/
+    private void updatePlayableCharsForSquaresAroundWord(Set<LetterContainer> containersOfMove) {
+        for (LetterContainer letterOfWord : containersOfMove) {
+            Set<LetterContainer> emptyAdjacentSquares = getEmptyAdjacentSquares(letterOfWord);
+            for (LetterContainer emptyAdjacentSquare : emptyAdjacentSquares) {
+                restrictEmptySquareAndSaveCrossCheckScore(emptyAdjacentSquare);
+            }
         }
     }
 
     private void findAllPossibleDownMoves(Player player, LetterContainer anchor) {
         Move newMove = new Move();
         String wordAbove = getWordAbove(anchor.getLocation());
-        List<LetterContainer> letterContainersOfWordAbove = getExistingWordAbove(anchor.getLocation());
+        List<LetterContainer> letterContainersOfWordAbove = getLCsOfWordAbove(anchor.getLocation());
         if (wordAbove != null && letterContainersOfWordAbove != null && !wordAbove.equals("")) {
             addTileMovesOfExistingWord(newMove, letterContainersOfWordAbove);
             extendDown(wordAbove, wordChecker.search(wordAbove), anchor, player, false);
@@ -585,6 +573,7 @@ public class GameManager {
         }
     }
 
+    /* While extending down, we found a square that is occupied, save it and continue extending down*/
     private void extendDownCurrentOccupied(String wordSoFar, WordChecker.TrieNode node, LetterContainer currentSquare, Player player) {
         String letter = currentSquare.getText();
         if (node.children[getChildIndexForLetter(letter)] != null) {
@@ -622,21 +611,28 @@ public class GameManager {
 
         // a legal play requires at least one letter from the players rack and one on the board
         if (containsLetterFromRack && containsLetterOnBoard) {
-            Move move = new Move(word, tileMoves);
+            Move move = new Move(tileMoves);
             player.addPlayableMove(move, getMoveScore(move) + crossScoreTotal);
         }
     }
 
-
-    private void addTileMovesOfExistingWord(Move newMove, List<LetterContainer> lcsOfWordBefore) {
-        List<TileMove> wordOnTheBoard = new ArrayList<>();
-        int size = lcsOfWordBefore.size();
-        for (int k = size - 1; k >= 0; k--) {
-            LetterContainer letterContainer = lcsOfWordBefore.get(k);
-            TileMove tileThatIsAlreadyOnBoard = new TileMove(false, letterContainer, letterContainer.getText().charAt(0));
-            wordOnTheBoard.add(tileThatIsAlreadyOnBoard);
+    private void findAllPossibleAcrossMoves(Player player, LetterContainer anchor) {
+        if (sentinels.contains(anchor)) {
+            return;
         }
-        newMove.setTileMoves(wordOnTheBoard);
+        Move newMove = new Move(); //copied later to save each playable moves
+        // first check for a word to the left
+        String wordLeft = getWordLeft(anchor.getLocation());
+        List<LetterContainer> letterContainersOfWordToLeft = getLCsOfWordLeft(anchor.getLocation());
+        if (wordLeft != null && letterContainersOfWordToLeft != null && !wordLeft.equals("")) {
+            addTileMovesOfExistingWord(newMove, letterContainersOfWordToLeft);
+            extendRight(wordLeft, wordChecker.search(wordLeft), anchor, player, false);
+        }
+        // find all left parts
+        else {
+            int limitToTheLeft = getNumNonAnchorsInRowToLeft(anchor);
+            getLeftPart(anchor, "", wordChecker.getRoot(), limitToTheLeft, player);
+        }
     }
 
     private void getLeftPart(LetterContainer anchor, String wordSoFar, WordChecker.TrieNode currentNode, int limit, Player player) {
@@ -711,11 +707,12 @@ public class GameManager {
 
         // a legal play requires at least one letter from the players rack and one on the board
         if (containsLetterFromRack && containsLetterOnBoard) {
-            Move move = new Move(word, tileMoves);
+            Move move = new Move(tileMoves);
             player.addPlayableMove(move, getMoveScore(move) + crossScoreTotal);
         }
     }
 
+    /* While extending right, we found a square that is occupied, save it and continue extending right*/
     private void extendRightCurrentOccupied(String wordSoFar, WordChecker.TrieNode node, LetterContainer currentSquare,
                                             Player player) {
         String letter = currentSquare.getText();
@@ -729,6 +726,15 @@ public class GameManager {
 
 /////////// PUBLIC METHODS /////////////////////////////////////////////////////////////////////////////////////////////
 
+    /** Adds a letter to the virtual copy of the UI board.*/
+    static void clearSpaceOnBoard(LetterContainer letterContainer) {
+        int col = letterContainer.getLocation().getCol();
+        int row = letterContainer.getLocation().getRow();
+        virtualBoard[row][col] = ' ';
+        newlyPopulatedContainers.remove(letterContainer);
+    }
+
+    /** Removes a letter in the virtual copy of the UI board.*/
     static void addLetterToRowColOnBoard(char c, LetterContainer letterContainer) {
         newlyPopulatedContainers.add(letterContainer);
         GameManager.containersWithCommittedLetters.put(letterContainer, true);
@@ -739,13 +745,15 @@ public class GameManager {
         }
     }
 
-    static void clearSpaceOnBoard(LetterContainer letterContainer) {
-        int col = letterContainer.getLocation().getCol();
-        int row = letterContainer.getLocation().getRow();
-        virtualBoard[row][col] = ' ';
-        newlyPopulatedContainers.remove(letterContainer);
+    static LetterContainer getColumnFifteenSentinels(int row) {
+        return columnFifteenSentinels.get(row);
     }
 
+    static LetterContainer getRowFifteenSentinels(int col) {
+        return rowFifteenSentinels.get(col);
+    }
+
+    /** Disables drag and drop on letters that have been committed*/
     void commitAllNewlyPopulatedContainers() {
         for (LetterContainer letterContainer : newlyPopulatedContainers) {
             GameManager.containersWithCommittedLetters.put(letterContainer, true);
@@ -756,13 +764,34 @@ public class GameManager {
         newlyPopulatedContainers.clear();
     }
 
-    private void updatePlayableCharsForSquaresAroundWord(Set<LetterContainer> containersOfMove) {
-        for (LetterContainer letterOfWord : containersOfMove) {
-            Set<LetterContainer> emptyAdjacentSquares = getEmptyAdjacentSquares(letterOfWord);
-            for (LetterContainer emptyAdjacentSquare : emptyAdjacentSquares) {
-                restrictEmptySquareAndSaveCrossCheckScore(emptyAdjacentSquare);
+    /** Finds the entire sets of possible across and down moves, places the highest scoring one on the board and
+     * updates the players score to reflect the move.*/
+    void doBestPossibleMove(Player player) {
+        player.clearPlayableMoves();
+        Map<LetterContainer, Set<Character>> potentialAcrosses = findAcrossAnchors();
+        for (LetterContainer anchor : potentialAcrosses.keySet()) {
+            if (!potentialAcrosses.get(anchor).isEmpty()) {
+                findAllPossibleAcrossMoves(player, anchor);
             }
         }
 
+        Map<LetterContainer, Set<Character>> potentialDowns = findDownAnchors();
+        for (LetterContainer anchor : potentialDowns.keySet()) {
+            if (!potentialDowns.get(anchor).isEmpty()) {
+                findAllPossibleDownMoves(player, anchor);
+            }
+        }
+
+        Move highestScoringMove = null;
+        int highScore = 0;
+        for (Map.Entry move : player.getPlayableMoves().entrySet()) {
+            if ((Integer) move.getValue() > highScore) {
+                highScore = (Integer) move.getValue();
+                highestScoringMove = (Move) move.getKey();
+            }
+        }
+
+        placeHighestScoringWord(highestScoringMove, player);
+        updatePlayerScore(player, highScore);
     }
 }

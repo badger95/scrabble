@@ -52,11 +52,11 @@ abstract class Player {
         }
     }
 
-    public int getScore() {
+    int getScore() {
         return score;
     }
 
-    public void updateScore(int score) {
+    void updateScore(int score) {
         this.score += score;
     }
 
