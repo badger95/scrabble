@@ -15,9 +15,9 @@ class Board extends GridPane {
 
     static char[][] virtualBoard = new char[15][15];
 
-    static final String TRIPLE_WORD_SCORE = "Triple\nMove\nScore";
+    static final String TRIPLE_WORD_SCORE = "Triple\nWord\nScore";
     static final String DOUBLE_LETTER_SCORE = "Double\n Letter\n Score";
-    static final String DOUBLE_WORD_SCORE = "Double\n Move\n Score";
+    static final String DOUBLE_WORD_SCORE = "Double\n Word\n Score";
     static final String TRIPLE_LETTER_SCORE = "Triple\nLetter\nScore";
     static final String STAR = "★";
 
