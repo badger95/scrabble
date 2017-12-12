@@ -52,10 +52,19 @@ abstract class Player {
         }
     }
 
+    public int getScore() {
+        return score;
+    }
+
+    public void updateScore(int score) {
+        this.score += score;
+    }
+
     void fillLetterRack() {
         for (LetterContainer letterContainer : letterRack.getLetters()) {
             if (letterContainer.getText().equals("")) {
                 String letter = LetterBag.getRandomFromBagAsString();
+
                 if (letter != null && !letter.equals("")) {
                     letterContainer.addLetter(letter);
                 }

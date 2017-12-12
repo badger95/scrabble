@@ -15,6 +15,8 @@ public class GameManager {
     private static Map<Integer, LetterContainer> columnFifteenSentinels = new HashMap<>();
     private static Map<Integer, LetterContainer> rowFifteenSentinels = new HashMap<>();
     private static Set<LetterContainer> sentinels = new HashSet<>();
+    private static Map<LetterContainer, Map<Character, Integer>> acrossAnchorCharacterScores = new HashMap<>();
+    private static Map<LetterContainer, Map<Character, Integer>> downAnchorCharacterScores = new HashMap<>();
 
     GameManager(Board board) {
         this.board = board;
@@ -74,7 +76,7 @@ public class GameManager {
         return adjacentSquares;
     }
 
-    private void restrictPossibleCharacters(LetterContainer emptySquare) {
+    private void restrictEmptySquareAndSaveCrossCheckScore(LetterContainer emptySquare) {
         LetterContainer.Location currentLocation = emptySquare.getLocation();
         Set<Character> restrictedAcrossSet = new HashSet<>();
         buildAlphabetSet(restrictedAcrossSet);
@@ -89,7 +91,29 @@ public class GameManager {
         restrictedDownSet = restrictBySurroundingWords(wordLeft, wordRight, restrictedDownSet);
 
         acrossPlaysForEmptySquares.put(emptySquare, restrictedAcrossSet);
+        Map<Character, Integer> charScoresForAcrossAnchor = new HashMap<>();
+        for (Character c : acrossPlaysForEmptySquares.get(emptySquare)) {
+            charScoresForAcrossAnchor.put(c, getWordScore(wordAbove + c + wordBelow));
+        }
+        acrossAnchorCharacterScores.put(emptySquare, charScoresForAcrossAnchor);
         downPlaysForEmptySquares.put(emptySquare, restrictedDownSet);
+        Map<Character, Integer> charScoresForDownAnchor = new HashMap<>();
+        for (Character c : downPlaysForEmptySquares.get(emptySquare)) {
+            charScoresForDownAnchor.put(c, getWordScore(wordLeft + c + wordRight));
+        }
+        downAnchorCharacterScores.put(emptySquare, charScoresForDownAnchor);
+    }
+
+    private Integer getWordScore(String word) {
+        if (word == null || word.equals("")) {
+            return 0;
+        } else {
+            int score = 0;
+            for (char c : word.toCharArray()) {
+                score += LetterBag.letterScoreMappings.get(c);
+            }
+            return score;
+        }
     }
 
     private String getWordAbove(LetterContainer.Location location) {
@@ -475,6 +499,12 @@ public class GameManager {
         }
 
         placeHighestScoringWord(highestScoringMove, player);
+        updatePlayerScore(player, highScore);
+    }
+
+    private void updatePlayerScore(Player player, int highScore) {
+        player.updateScore(highScore);
+        System.out.println(player.getScore());
     }
 
     private void findAllPossibleAcrossMoves(Player player, LetterContainer anchor) {
@@ -568,6 +598,7 @@ public class GameManager {
         List<TileMove> tileMoves = new ArrayList<>();
         int row = lastContainerOfWord.getLocation().getRow() - 1;
         int col = lastContainerOfWord.getLocation().getCol();
+        int crossScoreTotal = 0;
         boolean containsLetterFromRack = false;
         boolean containsLetterOnBoard = false;
         for (int i = 0; i < word.length(); i++) {
@@ -578,6 +609,12 @@ public class GameManager {
             }
             if (!fromRack) {
                 containsLetterOnBoard = true;
+                Map<Character, Integer> charScores = downAnchorCharacterScores.get(currentLetterInWord);
+                if (charScores != null) {
+                    if (charScores.get(word.charAt(word.length() - 1 - i)) != null) {
+                        crossScoreTotal += charScores.get(word.charAt(word.length() - 1 - i));
+                    }
+                }
             }
             TileMove tileMove = new TileMove(fromRack, currentLetterInWord, word.charAt(word.length() - 1 - i));
             tileMoves.add(tileMove);
@@ -586,7 +623,7 @@ public class GameManager {
         // a legal play requires at least one letter from the players rack and one on the board
         if (containsLetterFromRack && containsLetterOnBoard) {
             Move move = new Move(word, tileMoves);
-            player.addPlayableMove(move, getMoveScore(move));
+            player.addPlayableMove(move, getMoveScore(move) + crossScoreTotal);
         }
     }
 
@@ -651,6 +688,7 @@ public class GameManager {
         List<TileMove> tileMoves = new ArrayList<>();
         int row = lastContainerOfWord.getLocation().getRow();
         int col = lastContainerOfWord.getLocation().getCol() - 1;
+        int crossScoreTotal = 0;
         boolean containsLetterFromRack = false;
         boolean containsLetterOnBoard = false;
         for (int i = 0; i < word.length(); i++) {
@@ -660,6 +698,12 @@ public class GameManager {
                 containsLetterFromRack = true;
             } else {
                 containsLetterOnBoard = true;
+                Map<Character, Integer> charScores = acrossAnchorCharacterScores.get(currentLetterInWord);
+                if (charScores != null) {
+                    if (charScores.get(word.charAt(word.length() - 1 - i)) != null) {
+                        crossScoreTotal += charScores.get(word.charAt(word.length() - 1 - i));
+                    }
+                }
             }
             TileMove tileMove = new TileMove(fromRack, currentLetterInWord, word.charAt(word.length() - 1 - i));
             tileMoves.add(tileMove);
@@ -668,7 +712,7 @@ public class GameManager {
         // a legal play requires at least one letter from the players rack and one on the board
         if (containsLetterFromRack && containsLetterOnBoard) {
             Move move = new Move(word, tileMoves);
-            player.addPlayableMove(move, getMoveScore(move));
+            player.addPlayableMove(move, getMoveScore(move) + crossScoreTotal);
         }
     }
 
@@ -716,7 +760,7 @@ public class GameManager {
         for (LetterContainer letterOfWord : containersOfMove) {
             Set<LetterContainer> emptyAdjacentSquares = getEmptyAdjacentSquares(letterOfWord);
             for (LetterContainer emptyAdjacentSquare : emptyAdjacentSquares) {
-                restrictPossibleCharacters(emptyAdjacentSquare);
+                restrictEmptySquareAndSaveCrossCheckScore(emptyAdjacentSquare);
             }
         }
 
